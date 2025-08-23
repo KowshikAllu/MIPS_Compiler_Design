@@ -1,18 +1,15 @@
-﻿// Factorial of a number
-int n;
-output("Enter n: ");
-input(n);
+﻿//floor and ceil of floating point integer
 
-int fact;
-fact = 1;
+float f;
 
-int i;
-for (i = 1; i <= n; i = i + 1) {
-    fact = fact * i;
-}
+output("Enter a float number: ");
+input(f);
 
-output("Factorial: ");
-output(fact);
-output("\n");
+int a1 = f;
+
+output("The floor of ");
+output(f);
+output(" is ");
+output(a1);
 
 return 0;
