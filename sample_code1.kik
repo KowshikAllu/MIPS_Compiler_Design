@@ -1,4 +1,4 @@
-﻿// Check whether it's a prime number
+// Check whether it's a prime number
 int number;
 
 output("Enter the number: ");
@@ -11,8 +11,8 @@ for (i = 2; i < number; i=i+1) {
     }
     else{
         output("It is not a prime number.\n");
-        return 0;
-    }
+return 0;
+}
 }
 output("It is a prime number.\n");
 
