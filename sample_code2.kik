@@ -1,0 +1,18 @@
+﻿// Factorial of a number
+int n;
+output("Enter n: ");
+input(n);
+
+int fact;
+fact = 1;
+
+int i;
+for (i = 1; i <= n; i = i + 1) {
+    fact = fact * i;
+}
+
+output("Factorial: ");
+output(fact);
+output("\n");
+
+return 0;
