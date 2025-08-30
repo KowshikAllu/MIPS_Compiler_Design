@@ -15,7 +15,7 @@
   
 ### How to Run-
 ```bash
-flex lexical_analyzer.y
+flex lexical_analyzer.l
 bison -d parser.y
 g++ lex.yy.c parser.tab.c -o kik_compiler
 ./kik_compiler < sample_code1.kik
@@ -44,30 +44,33 @@ g++ lex.yy.c parser.tab.c -o kik_compiler
 - Output the list of tokens for a given program
 
 ### Work Done
-- Wrote a Flex file (lexer.l) defining regex patterns for tokens
+- Wrote a Flex file (lexical_analyzer.l) defining regex patterns for tokens
 - Compiled the lexer and tested with sample KIK programs
 - Verified that the tokens printed match the source program structure
+- Added a Makefile to automate build and run steps
 
 ### Tools
 - Flex – for generating the scanner
 - g++ – for compiling the generated code
+- Makefile – for automating compilation and execution
   
 ### How to Run-
 ```bash
-flex lexical_analyzer.l
-g++ lex.yy.c -o lexer
-./lexer < sample1.kik
-./lexer < sample2.kik
-
+make      # Build the lexer
+make run FILE=sample_code1.kik    # Run lexer on sample programs
+make run FILE=sample_code2.kik
+make clean      # Clean build artifacts
+cat output.txt      # Check results
 ```
 
 ### Contributions
-- Akash – Implemented lexer rules in Flex, integrated build
-- Akshatha – Helped refine token categories, tested with sample programs
-- Sai Kowshik – Verified token output and cross-checked with language spec draft
+- Akshatha – Implemented lexer rules in Flex, integrated build
+- Akash – Helped refine token categories, tested with sample programs
+- Sai Kowshik – Verified token output and cross-checked with language spec draft and integrated build.
 
 ### Deliverables
-- lexer.l – KIK lexer implementation
+- lexical_analyzer.l – KIK lexer implementation
+- Makefile – Automates build and execution of lexer
 - Tokenized output for sample programs
 
 
