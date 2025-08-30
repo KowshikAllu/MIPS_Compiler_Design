@@ -9,7 +9,7 @@ for (i = 2; i < number; i=i+1) {
     if (number % i != 0){
         continue;
     }
-    else{
+    else if{
         output("It is not a prime number.\n");
 return 0;
 }
