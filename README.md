@@ -59,8 +59,8 @@ g++ lex.yy.c parser.tab.c -o kik_compiler
 make      # Build the lexer
 make run FILE=sample_code1.kik    # Run lexer on sample programs
 make run FILE=sample_code2.kik
-make clean      # Clean build artifacts
 cat output.txt      # Check results
+make clean      # Clean build artifacts
 ```
 
 ### Contributions
