@@ -82,9 +82,3 @@ digit   [0-9]
 %%
 
 int yywrap(void) { return 1; }
-
-int main(void) {
-    yylex();
-    printf("Total lines = %d\n", countn);
-    return 0;
-}
