@@ -1,6 +1,6 @@
 # MIPS_Compiler_Design
 
-## Module 1 - Language Specification & Prototype
+## Module 1 - Language Specification & Prototype [Date: 24th Aug, 2025]
 ### Overview
 - Defined KIK language basics and wrote 2 sample programs:
   - Floor & Ceil of a floating-point number
@@ -36,7 +36,7 @@ g++ lex.yy.c parser.tab.c -o kik_compiler
 ---
 
 
-## Module 2 - Lexical Analysis (Lexer)
+## Module 2 - Lexical Analysis (Lexer) [Date: 30th Aug, 2025]
 ### Overview
 - Implement a lexer for the KIK language
 - Recognize keywords, identifiers, numbers, operators, and delimiters
@@ -76,7 +76,7 @@ make clean      # Clean build artifacts
 
 ---
 
-## Module 3 - Parser
+## Module 3 - Parser [Date: 6th Sep, 2025]
 
 ### Work Done
 - Implemented lexer.l in Flex to tokenize KIK programs.
@@ -95,19 +95,19 @@ make clean      # Clean build artifacts
 
 ### Contributions
 - Akshatha: Lexical Analysis
-  - Coding: Maintain lexer.l, ensure all tokens (keywords, operators, literals) are handled.
-  - Reading: Study Flex manual (rules, regex, patterns). Document token definitions for the team.
-  - Planning: Create a token map (language construct → token name) and keep it updated as grammar evolves.
+  - Coding: Maintain lexer.l, ensure all tokens (keywords, operators, literals) are handled.
+  - Reading: Study Flex manual (rules, regex, patterns). Document token definitions for the team.
+  - Planning: Create a token map (language construct → token name) and keep it updated as grammar evolves.
 
 - Akash: Parser & Grammar
-  - Coding: Develop parser.y rules for statements (if, for, while, io).
-  - Reading: Study Bison manual, especially handling shift/reduce conflicts (if-else).
-  - Planning: Maintain a grammar document explaining each rule and its example usage in .kik code.
+  - Coding: Develop parser.y rules for statements (if, for, while, io).
+  - Reading: Study Bison manual, especially handling shift/reduce conflicts (if-else).
+  - Planning: Maintain a grammar document explaining each rule and its example usage in .kik code.
 
 - Sai Kowshik: Integration & Testing
-  - Coding: Write test programs (sample_code1.kik, sample_code2.kik …) to cover different grammar rules.
-  - Reading: Research compiler phases (lexing, parsing, semantic analysis) and document next steps for project.
-  - Planning: Set up test plan (what constructs to test, expected vs. actual parsing output).
+  - Coding: Write test programs (sample_code1.kik, sample_code2.kik …) to cover different grammar rules.
+  - Reading: Research compiler phases (lexing, parsing, semantic analysis) and document next steps for project.
+  - Planning: Set up test plan (what constructs to test, expected vs. actual parsing output).
 
 ### Deliverables
 - lexer.l – Flex-based lexer for tokenizing KIK programs.
@@ -115,4 +115,4 @@ make clean      # Clean build artifacts
 - Makefile – Automates build, run, and clean operations.
 - Output files – Tokenized and parsed results for sample KIK programs.
 
- ---
+---
