@@ -1,4 +1,20 @@
 # MIPS_Compiler_Design
+## How to Run-
+```bash
+make fname=test    # Run lexer on sample programs
+./parser <inpput_file>      # eg. `./parser inp1`
+make clean      # Clean build artifacts
+```
+> **NOTE of Versions:**
+>  - flex 2.6.4
+>  - bison++ Version 1.21.9-1
+
+**NOTE of inputs:** 
+  - inp1 is for associativity check
+  - inp2 is for if and nested-if
+  - inp3 is for scope check
+
+---
 
 ## Module 1 - Language Specification & Prototype [Date: 24th Aug, 2025]
 ### Overview
@@ -11,16 +27,8 @@
 ### Tools
 - Flex – lexical analysis
 - Bison – parsing
-- g++ – compilation & linking
-  
-### How to Run-
-```bash
-flex lexical_analyzer.l
-bison -d parser.y
-g++ lex.yy.c parser.tab.c -o kik_compiler
-./kik_compiler < sample_code1.kik
-./kik_compiler < sample_code2.kik
-```
+- gcc – compilation & linking
+- Makefile – for automating compilation and execution
 
 ### Contributions
 - Sai Kowshik – Language spec, sample programs, grammar draft
@@ -36,83 +44,79 @@ g++ lex.yy.c parser.tab.c -o kik_compiler
 ---
 
 
-## Module 2 - Lexical Analysis (Lexer) [Date: 30th Aug, 2025]
+## Module 2 - Lexical & Syntax Analysis [Date: 30th Aug, 2025]
 ### Overview
-- Implement a lexer for the KIK language
-- Recognize keywords, identifiers, numbers, operators, and delimiters
-- Skip whitespace and comments
-- Output the list of tokens for a given program
+This module is the front-end of the compiler. It scans the input source code and converts it into tokens using lexical rules. Then, the syntax analyzer checks if the sequence of tokens follows the defined grammar rules. If the input is syntactically correct, a parse tree is generated.
 
 ### Work Done
-- Wrote a Flex file (lexical_analyzer.l) defining regex patterns for tokens
-- Compiled the lexer and tested with sample KIK programs
-- Verified that the tokens printed match the source program structure
-- Added a Makefile to automate build and run steps
-
-### Tools
-- Flex – for generating the scanner
-- g++ – for compiling the generated code
-- Makefile – for automating compilation and execution
-  
-### How to Run-
-```bash
-make      # Build the lexer
-make run FILE=sample_code1.kik    # Run lexer on sample programs
-make run FILE=sample_code2.kik
-cat output.txt      # Check results
-make clean      # Clean build artifacts
-```
+- Designed and implemented the lexical analyzer using Lex/Flex.
+- Defined tokens: identifiers, operators, keywords, numbers, etc.
+- Implemented context-free grammar (CFG) in Yacc for expressions, conditions, loops, and assignments.
+- Handled operator precedence and associativity in grammar.
+- Constructed parse tree/syntax tree for valid inputs.
+- Resolved shift/reduce conflicts during parser generation.
+- Tested with basic input files (arithmetic expressions, if-else, while).
 
 ### Contributions
-- Akshatha – Implemented lexer rules in Flex, integrated build
-- Akash – Helped refine token categories, tested with sample programs
-- Sai Kowshik – Verified token output and cross-checked with language spec draft and integrated build.
+- Akshatha:
+  - Designed and implemented the lexical analyzer (Flex/Lex).
+  - Defined regex rules for identifiers, numbers, operators, keywords.
+  - Generated tokens (VAR, PLUS, MINUS, MUL, DIV, INC, DEC, IF, ELSE, etc.).
+- Akash:
+  - Worked on Yacc grammar design (CFG).
+  - Defined production rules for expressions, conditions, and loops.
+  - Implemented parse-tree generation and basic error recovery rules.
+- Sai Kowshik:
+  - Integrated Lex and Yacc modules.
+  - Debugged shift/reduce conflicts in grammar.
+  - Tested the parser with basic input programs and ensured correct token-to-syntax mapping.
+  
+---
 
-### Deliverables
-- lexical_analyzer.l – KIK lexer implementation
-- Makefile – Automates build and execution of lexer
-- Tokenized output for sample programs
+## Module 3 - Basic TAC Generation & Symbol Table [Date: 6th Sep, 2025]
 
+### Overview
+Once the syntax is validated, the next step is to produce an intermediate representation (IR) of the program. We used Three Address Code (TAC) for this. The symbol table keeps track of identifiers, types, sizes, and memory offsets. Together, these allow translation into machine-understandable form in later stages.
+
+### Work Done
+- Implemented TAC generation for arithmetic, relational, and logical operations.
+- Added backpatching support for control flow (if, else, while).
+- Defined a struct for TAC (True, False, next, lexval, code) to store intermediate results.
+- Implemented label management for jumps and branching statements.
+- Designed and implemented a symbol table (name, type, size, offset).
+- Integrated symbol table lookup with TAC generation to validate identifiers.
+- Verified TAC generation with test programs (arithmetic evaluation, nested if-else, loops).
+
+### Contributions
+- Akash:
+  - Implemented TAC (Three Address Code) generation functions.
+  - Handled assignment, arithmetic, relational operators.
+  - Implemented backpatching for control flow (if, while).
+
+- Akshatha:
+  - Designed structs for TAC storage (True, False, next, lexval, code).
+  - Managed label creation and linking for conditional jumps.
+  - Extended grammar actions to generate TAC inline.
+
+- Sai Kowshik:
+  - Designed and implemented the symbol table structure.
+  - Maintained entries (name, type, size, offset).
+  - Added support for variable declaration & lookup in TAC generation.
 
 ---
 
-## Module 3 - Parser [Date: 6th Sep, 2025]
+## PFA-
+### 🔹 Associativity
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6335909a-ecc1-4851-ba73-aa64442dc286" alt="Associativity" width="800" />
+</p>
 
-### Work Done
-- Implemented lexer.l in Flex to tokenize KIK programs.
-- Created parser.y in Bison with basic grammar rules.
-- Integrated lexer and parser with error reporting.
-- Added a Makefile for automated build, run, and clean.
+### 🔹 If and Nested-If
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c78e705e-6fa5-4bf3-9eaa-4139d3add86a" alt="If and Nested-If" width="800" />
+</p>
 
-### How to Run-
-```bash
-make      # Build the lexer
-make run FILE=sample_code1.kik    # Run lexer on sample programs
-make run FILE=sample_code2.kik
-cat output.txt      # Check results
-make clean      # Clean build artifacts
-```
-
-### Contributions
-- Akshatha: Lexical Analysis
-  - Coding: Maintain lexer.l, ensure all tokens (keywords, operators, literals) are handled.
-  - Reading: Study Flex manual (rules, regex, patterns). Document token definitions for the team.
-  - Planning: Create a token map (language construct → token name) and keep it updated as grammar evolves.
-
-- Akash: Parser & Grammar
-  - Coding: Develop parser.y rules for statements (if, for, while, io).
-  - Reading: Study Bison manual, especially handling shift/reduce conflicts (if-else).
-  - Planning: Maintain a grammar document explaining each rule and its example usage in .kik code.
-
-- Sai Kowshik: Integration & Testing
-  - Coding: Write test programs (sample_code1.kik, sample_code2.kik …) to cover different grammar rules.
-  - Reading: Research compiler phases (lexing, parsing, semantic analysis) and document next steps for project.
-  - Planning: Set up test plan (what constructs to test, expected vs. actual parsing output).
-
-### Deliverables
-- lexer.l – Flex-based lexer for tokenizing KIK programs.
-- parser.y – Bison-based parser with basic grammar rules.
-- Makefile – Automates build, run, and clean operations.
-- Output files – Tokenized and parsed results for sample KIK programs.
-
----
+### 🔹 Scoping
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5e637590-ccbe-42af-937c-aa2efd72e10e" alt="Scoping" width="800" />
+</p>
