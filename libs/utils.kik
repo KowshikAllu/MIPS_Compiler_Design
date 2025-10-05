@@ -2,4 +2,7 @@
 // Provides basic I/O functions for the Kik language
 
 void input(INT var);
+void input(FLOAT var);
+void input(STRING var);
 void output(STRING msg);
+void output(INT var);

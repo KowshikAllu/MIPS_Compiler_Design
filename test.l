@@ -17,15 +17,13 @@ digit [0-9]
 "string"                    { strcpy(yylval.node.lexeme, yytext); return STRING; }
 "void"                      { strcpy(yylval.node.lexeme, yytext); return VOID; }
 "return"                    { strcpy(yylval.node.lexeme, yytext); return RETURN; }
-"input"                     { strcpy(yylval.node.lexeme, yytext); return INPUT; }
-"output"                    { strcpy(yylval.node.lexeme, yytext); return OUTPUT; }
 "switch"                    { strcpy(yylval.node.lexeme, yytext); return SWITCH; }
 "case"                      { strcpy(yylval.node.lexeme, yytext); return CASE; }
 "break"                     { strcpy(yylval.node.lexeme, yytext); return BREAK; }
 "continue"                  { strcpy(yylval.node.lexeme, yytext); return CONTINUE; }
 "default"                   { strcpy(yylval.node.lexeme, yytext); return DEFAULT; }
 "if"                        { strcpy(yylval.node.lexeme, yytext); return IF; }
-"else if"                      { strcpy(yylval.node.lexeme, yytext); return ELIF; }
+"else if"                   { strcpy(yylval.node.lexeme, yytext); return ELIF; }
 "else"                      { strcpy(yylval.node.lexeme, yytext); return ELSE; }
 "while"                     { strcpy(yylval.node.lexeme, yytext); return WHILE; }
 "for"                       { strcpy(yylval.node.lexeme, yytext); return FOR; }
@@ -81,6 +79,9 @@ digit [0-9]
 .                           { ; }
 
 %%
+
+// "input"                     { strcpy(yylval.node.lexeme, yytext); return INPUT; }
+// "output"                    { strcpy(yylval.node.lexeme, yytext); return OUTPUT; }
 
 int yywrap() {
     return 1;

@@ -6,6 +6,7 @@ make run INPUT=sample_code1
 strings data_type
 
 scope_history, scope_counter in if stmts
+if to add libs -> change in valid_libs, import_stmt, func_call
 
 ----------------------------------
 
@@ -23,10 +24,13 @@ tac, vm
 type handling
 check declaration, multiple declarations, reserved words, type check
 symbol table print
+libraries
 
 duplicate funcs check
+input output diff type of args
+error even if input commented in utils
+if input output rules are kept in .y then if it works evn if lib is not imported
 
-libraries
 .stkasm
 check_scope func commented put at some places why
 switch case some err, code 3

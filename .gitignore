@@ -1,5 +1,5 @@
 stkasm_test_codes/
-tac-other/tac-vm.cpp
+tac-other/tac-stkasm.cpp
 lex.yy.c
 parser.exe
 tac-vm.exe

@@ -63,7 +63,7 @@
         int line_number; 
     };
 
-    set<string> valid_libs = {"\"utils.kik\"", "\"math.kik\"", "\"io.kik\""};
+    set<string> valid_libs = {"\"utils.kik\"", "\"string.kik\"", "\"math.kik\"", "\"io.kik\""};
     set<string> imported_libs;
     vector<string> tac;
     map<string, string> temp_map;
@@ -121,7 +121,7 @@
     } node;
 }
 
-%token <node> IMPORT INT CHAR FLOAT STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STR CHARACTER CC OC CS OS CF OF COMMA COLON SCOL OUTPUT INPUT SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE
+%token <node> IMPORT INT CHAR FLOAT STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STR CHARACTER CC OC CS OS CF OF COMMA COLON SCOL SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE
 
 %type <node> Program import_list import_stmt func func_list func_prefix param_list param stmt_list stmt declaration return_stmt data_type func_data_type expr primary_expr unary_expr unary_op const assign if_stmt elif_stmt else_stmt switch_stmt case_stmt case_stmt_list while_loop_stmt for_loop_stmt postfix_expr func_call arg_list arg
 
@@ -150,7 +150,6 @@ import_list     :       import_list import_stmt
 
 import_stmt     :       IMPORT STR SCOL {
                             string lib = string($2.lexeme);
-                            cout << "Importing library: " << lib << endl;
                             if(valid_libs.find(lib) == valid_libs.end()){
                                 sem_errors.push_back("Library " + lib + " not found at line " + to_string(countn+1));
                             }
@@ -172,6 +171,18 @@ import_stmt     :       IMPORT STR SCOL {
                                     output_func.num_params = 1;
                                     output_func.param_types = {"STRING"};
                                     func_table["output"] = output_func;
+                                } else if (lib == "\"string.kik\"") {
+                                    func_info strlen_func;
+                                    strlen_func.return_type = "INT";
+                                    strlen_func.num_params = 1;
+                                    strlen_func.param_types = {"STRING"};
+                                    func_table["strlen"] = strlen_func;
+                                } else if (lib == "\"math.kik\"") {
+                                    func_info max_func;
+                                    max_func.return_type = "INT";
+                                    max_func.num_params = 2;
+                                    max_func.param_types = {"INT", "INT"};
+                                    func_table["max"] = max_func;
                                 }
                             }
                         }
@@ -260,7 +271,7 @@ stmt            :       declaration
                                 }
                             }
                         |   switch_stmt
-                        |   INPUT OC ID CC SCOL {
+                        /* |   INPUT OC ID CC SCOL {
                                 check_declaration($3.lexeme);
                                 tac.push_back("input " + string($3.lexeme) + " " + func_table[curr_func_name].symbol_table[string($3.lexeme)].data_type);
                                 // check_scope(string($3.lexeme));
@@ -281,7 +292,7 @@ stmt            :       declaration
                                 cout << "output expr2" << endl;
                                 tac.push_back("output " + string($3.lexeme) + " STR");
                             }
-                        ;
+                        ; */
 
 declaration     :       data_type ID SCOL { 
                             is_reserved_word(string($2.lexeme));
@@ -957,6 +968,14 @@ func_call       :       ID {
                                     sem_errors.push_back("Function '" + func_name +
                                         "' used without importing \"utils.kik\" at line " + to_string(countn + 1));
                                 }
+                                if (func_name == "strlen" &&
+                                    imported_libs.find("\"string.kik\"") == imported_libs.end()) {
+                                    sem_errors.push_back("Function 'strlen' used without importing \"string.kik\" at line " + to_string(countn + 1));
+                                }
+                                if (func_name == "max" &&
+                                    imported_libs.find("\"math.kik\"") == imported_libs.end()) {
+                                    sem_errors.push_back("Function 'max' used without importing \"math.kik\" at line " + to_string(countn + 1));
+                                }
                                 func_call_id.push({func_name, func_table[func_name].param_types});
                             }
                         } OC arg_list CC  {
@@ -1041,6 +1060,11 @@ arg_list        :       arg COMMA arg_list {
 
 arg             :       expr {
                             tac.push_back("param " + string($1.lexeme) + " " + string($1.type));
+                        }
+                        | STR {
+                            tac.push_back("param " + string($1.lexeme) + " string");
+                            strcpy($$.type, "string");
+                            strcpy($$.lexeme, $1.lexeme);
                         }
                         ;
 
