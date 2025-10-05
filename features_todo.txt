@@ -1,0 +1,45 @@
+To Run:
+make run INPUT=sample_code1
+
+--------------------------------
+
+strings data_type
+
+scope_history, scope_counter in if stmts
+
+----------------------------------
+
+more input programs
+GitHub push, readme
+
+Features:
+input, output
+all arithmetic and logical and bitwise and unary
+if else, for, while, arrays, line nos
+associativity
+symbol table
+error handling
+tac, vm
+type handling
+check declaration, multiple declarations, reserved words, type check
+symbol table print
+
+duplicate funcs check
+
+libraries
+.stkasm
+check_scope func commented put at some places why
+switch case some err, code 3
+for int i = 0; i < 5;: i = i + 1:
+do while
+bool
+output("Hello, " << userName << "! You are " << userAge << " years old.\n");
+break, continue?
+functions
+scoping
+tac optimization
+memory allocation?
+reserved words error fix
+int a,b,c; error
+1. Pointers and structures are not introduced to the programming language yet.
+2. Line numbers in error messages in case of giving multiple files is not dealt with.

@@ -1,15 +1,14 @@
 ﻿//floor and ceil of floating point integer
+// re-declaration
 
 float f;
 
 output("Enter a float number: ");
 input(f);
-
+int f;
 int a1 = f;
 
 output("The floor of ");
 output(f);
 output(" is ");
 output(a1);
-
-return 0;

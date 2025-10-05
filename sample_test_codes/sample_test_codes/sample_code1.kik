@@ -1,0 +1,30 @@
+// Check whether it's a prime number 
+import "utils.kik";
+
+void func(int number) {
+    // null
+}
+
+int main(){
+
+	int number;
+
+	output("Enter the number: ");
+	input(number);
+    func(number);
+    //func2(number);
+
+    int i;
+    for (i = 2; i < number; i=i+1) {
+        if (number % i != 0){
+            continue;
+        }
+        else{
+            output("It is not a prime number.\n");
+			return 0;
+		}
+    }
+	output("It is a prime number.\n");
+
+    return 0;
+}

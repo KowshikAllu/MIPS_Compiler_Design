@@ -1,0 +1,11 @@
+//import "io.kik";
+//int kik() {
+    int userAge;
+    str userName;
+    output("Enter your name: ");
+    input(userName);
+    output("Enter your age: ");
+    input(userAge);
+    output("Hello, " << userName << "! You are " << userAge << " years old.\n");
+//    return 0;
+//}

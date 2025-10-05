@@ -1,0 +1,13 @@
+int a;
+int b;
+int c;
+int d;
+a = 10;
+b = 5;
+c = 2;
+d = 3;
+
+int result;
+
+// mix of operators: +, -, *, /
+result = a + b * c - d / b;

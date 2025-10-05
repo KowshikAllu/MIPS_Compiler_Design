@@ -1,0 +1,15 @@
+int a;
+int b;
+int c;
+a = 10;
+b = 5;
+c = 2;
+
+int result;
+
+// left-associative operators: -, /
+result = a - b - c;   // Interpreted as (a - b) - c
+result = a / b / c;   // Interpreted as (a / b) / c
+
+// right-associative operator: exponent (^)
+result = a ^ b ^ c;   // Interpreted as a ^ (b ^ c)

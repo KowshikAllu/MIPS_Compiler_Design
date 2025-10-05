@@ -1,0 +1,11 @@
+// import "io.kik";
+// int kik() {
+    output("Counting: ");
+    int i;
+    for i = 0; i < 5;: i = i + 1: {
+        output(i);
+        output(" ");
+    }
+    
+//    return 0;
+// }

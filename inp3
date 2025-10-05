@@ -1,9 +1,0 @@
-{
-int a , b , c ;
-char e ;
-float pi = 3.14;
-{
-int a ;
-char b ;
-}
-}

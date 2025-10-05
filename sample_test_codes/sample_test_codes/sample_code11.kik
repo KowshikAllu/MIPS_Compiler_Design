@@ -1,0 +1,12 @@
+//import "io.kik";
+//int kik() {
+    int a = 10;
+    int b = 5;
+    int result = (a * 2) + b;
+    if result == 25: {
+        output("Expression evaluated correctly!\n");
+    } else: {
+        output("Expression evaluation failed.\n");
+    }
+//    return 0;
+//}

@@ -1,0 +1,30 @@
+// KIK Library Test Harness
+// Filename: main.kik
+
+/*
+ * This program calls functions from the standard library
+ * to test their implementation and the compiler's ability
+ * to link multiple files.
+ *
+ * Note: An 'include' or 'import' feature will be designed later.
+ * For now, we assume the compiler is given all files at once.
+ */
+
+int kik() {
+    println("--- Testing KIK Standard Library ---"); // From io.kik
+
+    // Test 1: Math Library
+    println("\nTesting math.kik...");
+    int larger_num = max(100, 42); // From math.kik
+    output("The max of 100 and 42 is: ");
+    output(larger_num);
+
+    // Test 2: String Library
+    println("\n\nTesting string.kik...");
+    int len = strlen("KIK Language"); // From string.kik
+    output("The length of 'KIK Language' is: ");
+    output(len);
+
+    println("\n\n--- Library Tests Complete ---");
+    return 0;
+}

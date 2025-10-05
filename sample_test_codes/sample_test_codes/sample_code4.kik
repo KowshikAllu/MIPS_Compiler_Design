@@ -1,0 +1,33 @@
+char func(int a, int b) {
+	float f;
+
+	output("Enter a float number: ");
+	input(f);
+	int a1 = f;
+
+	output("The floor of ");
+	output(f);
+	output(" is ");
+	output(a1);
+	return 'a';
+}
+
+// Ascii values 
+int main(){
+	char arr[5] = {'v', 'w', 'x', 'y', 'z'};
+	int i;
+	for(i=0; i<5; i=i+1){
+		output("Ascii value of ");
+		output(arr[i]);
+		output(" is ");
+		int temp = arr[i];
+		output(temp);
+		output(".\n");
+	}
+	
+	string str = "This is a string.\n";
+	
+	output(str);
+
+	return 0;
+}

@@ -1,0 +1,12 @@
+// import "io.kik";
+// int kik() {
+    int score = 85;
+    if score >= 90: {
+        output("Grade: A\n");
+    } else if score >= 80: {
+        output("Grade: B\n");
+    } else: {
+        output("Grade: C or lower\n");
+    }
+//    return 0;
+// }

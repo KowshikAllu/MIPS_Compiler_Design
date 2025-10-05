@@ -1,0 +1,12 @@
+//import "io.kik";
+//int kik() {
+    int age = 25;
+    float pi = 3.14;
+    bool isKik = true;
+    int x, y, z = 100;
+    constant str GREETING = "Hello!";
+    output("Age: " << age << "\n");
+    output("Z value: " << z << "\n");
+    output(GREETING << "\n");
+//    return 0;
+//}

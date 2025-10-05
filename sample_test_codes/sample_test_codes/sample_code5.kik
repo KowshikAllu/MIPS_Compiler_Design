@@ -1,0 +1,6 @@
+// type-check
+char c;
+float f;
+
+c = 5.7;   // ERROR: assigning FLOAT to CHAR
+f = 'A';   // ERROR: assigning CHAR to FLOAT

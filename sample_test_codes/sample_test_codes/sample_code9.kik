@@ -1,0 +1,8 @@
+//import "io.kik";
+//int kik() {
+    int a = 8;
+    int b = 90;
+    int result = a + b;
+    output("Final output after adding: " << result << "\n");
+//    return 0;
+//}
