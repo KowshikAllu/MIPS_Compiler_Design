@@ -1,0 +1,11 @@
+// KIK Standard Library: I/O Helpers
+// Filename: io.kik
+
+/*
+ * Prints a string to the console, followed by a newline character.
+ * This is a convenient wrapper around the basic output() function.
+ */
+void println(str message) {
+    output(message);
+    output("\n");
+}

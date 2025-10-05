@@ -1,0 +1,9 @@
+stkasm_test_codes/
+tac-other/tac-vm.cpp
+lex.yy.c
+parser.exe
+tac-vm.exe
+tac-stkasm.exe
+y.output
+y.tab.c
+y.tab.h

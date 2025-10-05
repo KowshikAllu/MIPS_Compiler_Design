@@ -1,0 +1,14 @@
+// KIK Standard Library: String Utilities
+// Filename: string.kik
+
+/*
+ * Calculates the length of a string.
+ * Assumes strings are null-terminated (end with the '\0' character).
+ */
+int strlen(str s) {
+    int len = 0;
+    while (s[len] != '\0'): {
+        len = len + 1;
+    }
+    return len;
+}

@@ -1,0 +1,13 @@
+// KIK Standard Library: Math Utilities
+// Filename: math.kik
+
+/*
+ * Returns the greater of two integers, a and b.
+ */
+int max(int a, int b) {
+    if (a > b): {
+        return a;
+    } else: {
+        return b;
+    }
+}

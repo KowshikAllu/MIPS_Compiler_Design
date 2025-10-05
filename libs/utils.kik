@@ -1,0 +1,5 @@
+// utils.kik — built-in utility library
+// Provides basic I/O functions for the Kik language
+
+void input(INT var);
+void output(STRING msg);

@@ -1,0 +1,318 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <map>
+#include <utility>
+#include <cctype>
+#include <cstdlib>
+using namespace std;
+
+vector<vector<string>> tac;
+vector<string> vm;
+map<string, pair<string, string>> constant;
+map<string, pair<string, string>> local;
+int local_idx = 0;
+int arg_idx = 0;
+map<string, pair<string, string>> temp;
+int temp_idx = 0;
+map<string, string> op_map;
+map<string, int> strings;
+int str_idx=0;
+
+map<string, pair<int, int>> fun_var_count;
+string curr_fun_name = "main";
+
+
+void initialize(){
+    // adding binary operations
+    op_map["+"] = "iadd";
+    op_map["-"] = "isub";
+    op_map["*"] = "imul";
+    op_map["/"] = "idiv";
+    op_map["=="] = "eq";
+    op_map[">"] = "gt";
+    op_map["<"] = "lt";
+    op_map["&"] = "and";
+    op_map["|"] = "or";
+    op_map["<="] = "le";
+    op_map[">="] = "ge";
+    op_map["!="] = "neq";
+}
+
+vector<string> tokenize(string in){
+    vector<string> res;
+    string temp_t = "";
+    for(int i=0; i<in.size(); i++){
+        if(in[i] == ' '){
+            res.push_back(temp_t);
+            temp_t = "";
+            while(i<in.size() && in[i] == ' '){
+                i++;
+            }
+            i--;
+        }
+        else{
+            if(in[i] == '"'){
+                string str="";
+                while(i<in.size() && in[i] != '\n')
+                    str += in[i++];
+
+                int l=0;
+                while(in[i] != '"'){
+                    i--;
+                    l++;
+                }
+
+                temp_t = str.substr(0,str.length()-l+1);
+            }
+            else{
+                temp_t += in[i];
+            }
+        }
+    }
+    if(temp_t.size())
+        res.push_back(temp_t);
+    return res;
+}
+
+void print(){
+    for(auto i: tac){
+        for(auto j: i){
+            cout << j << " ";
+        }
+        cout << endl;
+    }
+}
+
+bool isNumber(string& str){
+    for (char const &c : str){      
+        if (isdigit(c) == 0 && c != '.')
+          return false;
+    }
+    return true;
+}
+
+bool isOperator(string op){
+    if(op_map.find(op) != op_map.end())
+        return true;
+    return false;
+}
+
+pair<pair<string, string>, string> get_type(string var, string type){
+    pair<pair<string, string>, string> temp_var;
+    if(var[0] == '@') {
+        if(temp.find(var) == temp.end()){
+            temp[var].first = to_string(temp_idx);
+            temp[var].second = type;
+            temp_idx++;
+        }
+        temp_var.first.first = temp[var].first;
+        temp_var.first.second = temp[var].second;
+        temp_var.second = "temp";
+    }
+    else if(isNumber(var) || var[0] == '\'') {
+        if(constant.find(var) == constant.end()){
+            constant[var].first = var;
+            constant[var].second = type;
+            // check for the constant type
+        }
+        temp_var.first.first = constant[var].first;
+        temp_var.first.second = constant[var].second;
+        temp_var.second = "iconst";
+    }
+    else {
+        if(local.find(var) == local.end()){
+            local[var].first = to_string(local_idx);
+            local[var].second = type;
+            local_idx++;
+        }
+        temp_var.first.first = local[var].first;
+        temp_var.first.second = local[var].second;
+        temp_var.second = "local";
+    }
+    return temp_var;
+}
+
+void conversion(){
+    for(int i=0; i<tac.size(); i++){
+        if(tac[i].size() == 1 && tac[i][0][tac[i][0].size()-1] == ':'){
+            string ins = "";
+            if(tac[i][0][0] == '#'){
+                ins += "label ";
+                ins += tac[i][0];
+                ins += ":";
+                ins.pop_back();
+                vm.push_back(ins);
+            }
+        }
+        if(tac[i].size() > 1){
+            if(tac[i].size() == 6 && tac[i][1] == "=" && isOperator(tac[i][3])){
+                pair<pair<string, string>, string> type_a = get_type(tac[i][0], tac[i][5]);
+                pair<pair<string, string>, string> type_b = get_type(tac[i][2], tac[i][5]);
+                pair<pair<string, string>, string> type_c = get_type(tac[i][4], tac[i][5]);
+                vm.push_back(type_b.second + " " + type_b.first.first);
+                vm.push_back(type_c.second + " " + type_c.first.first);
+                vm.push_back(op_map[tac[i][3]] + " " + tac[i][5]);
+                // if(op_map[tac[i][3]] != "eq")
+            }
+            else if(tac[i].size() == 2){
+                if(tac[i][0] == "GOTO"){
+                    vm.push_back("jump " + tac[i][1]);
+                }
+            }
+            else if(tac[i].size() == 3){
+                if(tac[i][0] == "param"){
+                    pair<pair<string, string>, string> type_a = get_type(tac[i][1], tac[i][2]);
+                    vm.push_back("push " + type_a.second + " " + type_a.first.first + " " + type_a.first.second);
+                }
+                else if(tac[i][0] == "input"){
+                    pair<pair<string, string>, string> type_a = get_type(tac[i][1], tac[i][2]);
+                    vm.push_back("scan " + type_a.second + " " + type_a.first.first + " " + tac[i][2]);
+                }
+                else if(tac[i][0] == "output"){
+                    if(tac[i][2] == "STR"){
+                        if(tac[i][1][0] == '"'){
+                            vm.push_back("data " + to_string(str_idx) + " " + tac[i][1]);
+                            strings[tac[i][1]] = str_idx++;
+                        }
+                        vm.push_back("data " + to_string(strings[tac[i][1]]));
+                    }
+                    else{
+                        pair<pair<string, string>, string> type_a = get_type(tac[i][1], tac[i][2]);
+                        vm.push_back(type_a.second + " " + type_a.first.first);
+                    }
+                    vm.push_back("print " + tac[i][2]);
+                }
+            }
+            else if(tac[i].size() == 4){
+                
+                    // simple assign : t0 = t1 INT
+                    if(tac[i][3] == "STR"){
+                        vm.push_back("data " + to_string(str_idx) + " " + tac[i][2]);
+                        strings[tac[i][0]] = str_idx++;
+                    }
+                    else{
+                        pair<pair<string, string>, string> type_a = get_type(tac[i][0], tac[i][3]);
+                        pair<pair<string, string>, string> type_b = get_type(tac[i][2], tac[i][3]);
+                        if(type_b.second == "iconst")
+                            vm.push_back(type_b.second + " " + tac[i][2] + " " + type_b.first.second);
+                        else
+                            vm.push_back(type_b.second + " " + type_b.first.first + " " + type_b.first.second);
+                    }
+            }
+            else if(tac[i].size() == 5){
+                // unary operations : t0 = - t1 INT
+                auto a = get_type(tac[i][0], tac[i][4]);
+                auto b = get_type(tac[i][3], tac[i][4]);
+
+                vm.push_back(b.second + " " + b.first.first + " " + a.first.second);
+                if(tac[i][2] == "-")
+                    vm.push_back("neg " + tac[i][4]);
+                else
+                    vm.push_back("not " + tac[i][4]);
+            }
+            else if(tac[i].size() == 6){
+                if(tac[i][3] == "["){
+                    // array declarations
+                    local[tac[i][2]].first = to_string(local_idx);
+                    local_idx += stoi(tac[i][4]);
+                    local[tac[i][2]].second = tac[i][1];
+                }
+            }
+            else if(tac[i].size() == 7){
+                if(tac[i][1] == "["){
+                    // arr [ 8 ] = @t0 INT
+                    auto a = get_type(tac[i][5], tac[i][6]);
+                    auto b = get_type(tac[i][2], "INT");
+                    vm.push_back(a.second + " " + a.first.first);
+
+                    vm.push_back("iconst " + local[tac[i][0]].first);
+                    vm.push_back("iconst " + local[tac[i][0]].first);
+                    vm.push_back("iconst " + local[tac[i][0]].first);
+                    vm.push_back("iconst " + local[tac[i][0]].first);
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+
+                    vm.push_back("iadd");
+                    // vm.push_back("pop pointer 0");
+                }
+                else if(tac[i][3] == "["){
+                    // @t5 = arr [ c ] INT
+                    auto a = get_type(tac[i][0], tac[i][6]);
+                    auto b = get_type(tac[i][4], "INT");
+
+                    vm.push_back("iconst " + local[tac[i][2]].first);
+                    vm.push_back("iconst " + local[tac[i][2]].first);
+                    vm.push_back("iconst " + local[tac[i][2]].first);
+                    vm.push_back("iconst " + local[tac[i][2]].first);
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back(b.second + " " + b.first.first);
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+                    vm.push_back("iadd");
+
+                    vm.push_back("iadd");
+                    // vm.push_back("pop pointer 0");
+                    vm.push_back(tac[i][6]);
+                }
+                else{
+                    // if t0 goto L1 else goto L2
+                    pair<pair<string, string>, string> type_a = get_type(tac[i][1], "INT");
+                    // vm.push_back("push constant 0 INT");
+                    vm.push_back(type_a.second + " " + type_a.first.first);
+                    // vm.push_back("eq INT");
+                    vm.push_back("if-goto " + tac[i][3]);
+                    vm.push_back("goto " + tac[i][6]);
+                }
+            }
+        }
+    }
+}
+
+void print_vm(){
+    for(int i=0; i<vm.size(); i++){
+        if(vm[i].substr(0,8) == "function"){
+            vector<string> temp;
+            temp = tokenize(vm[i]);
+            cout << temp[0] + " " + temp[1] + " " + to_string(fun_var_count[temp[1]].first) + " " + to_string(fun_var_count[temp[1]].second) << " " << temp[2] << endl;
+        }
+        else
+            cout << vm[i] << endl;
+    }
+}
+
+int main(){
+    fstream newfile;
+    newfile.open("tac.txt",ios::in);
+    if (newfile.is_open()){
+        string tp;
+        while(getline(newfile, tp)){
+            vector<string> temp;
+            temp = tokenize(tp);
+            tac.push_back(temp);
+        }
+        newfile.close();
+    }
+    // print();
+    initialize();
+    conversion();
+    print_vm();
+
+}
+
+// for now arrays are considered to be local
+// arguments loading at the time of function call is pending

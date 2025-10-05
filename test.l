@@ -1,51 +1,84 @@
 %{
-#include "y.tab.h"
-#include <stdio.h>
-#include <stdlib.h>
+    #include "y.tab.h"
+    int countn=0;
 %}
 
+%option yylineno
+
+alpha [a-zA-Z_]
 digit [0-9]
-word [a-zA-Z_]
 
 %%
 
-"if"                             { strcpy(yylval.lexeme, yytext); return IF;}
-"else"                           { strcpy(yylval.lexeme, yytext); return ELSE;}
-"while"                          { strcpy(yylval.lexeme, yytext); return WHILE;}
-"int"                            { return INT; }
-"float"                          { return FLOAT; }
-"char"                           { return CHAR; }
-{word}[a-zA-Z0-9_]*"["{digit}+"]"      { yylval.sval = strdup(yytext); return ARRAY; }
-{word}({word}|{digit})*? {
-    strcpy(yylval.lexeme, yytext);
-    return VAR;
-}
-{digit}+ {
-    yylval.val = atoi(yytext);
-    return NUM;
-}
-{digit}+\.{digit}*               { yylval.fval = atof(yytext); return DECIMAL; }
-"+"                              { strcpy(yylval.lexeme, yytext); return PLUS; }
-"-"                              { strcpy(yylval.lexeme, yytext); return MINUS; }
-"*"                              { strcpy(yylval.lexeme, yytext); return MUL; }
-"/"                              { strcpy(yylval.lexeme, yytext); return DIV; }
-"%"                              { strcpy(yylval.lexeme, yytext); return MOD; }
-"++"                             { strcpy(yylval.lexeme, yytext); return INC; }
-"--"                             { strcpy(yylval.lexeme, yytext); return DEC; }
-"+="                             { strcpy(yylval.lexeme, yytext); return PE; }
-"-="                             { strcpy(yylval.lexeme, yytext); return ME; }
-"*="                             { strcpy(yylval.lexeme, yytext); return MuE; }
-"/="                             { strcpy(yylval.lexeme, yytext); return DE; }
-"=="                             { strcpy(yylval.lexeme, yytext); return EE; }
-"<"                              { strcpy(yylval.lexeme, yytext); return LT; }
-">"                              { strcpy(yylval.lexeme, yytext); return GT; }
-"<="                             { strcpy(yylval.lexeme, yytext); return LE; }
-">="                             { strcpy(yylval.lexeme, yytext); return GE; }
-"!="                             { strcpy(yylval.lexeme, yytext); return NE; }
-"&&"                             { strcpy(yylval.lexeme, yytext); return AND; }
-"||"                             { strcpy(yylval.lexeme, yytext); return OR; }
-[ \t\n]+                         ;  
-.                                { return yytext[0]; }
+"import"                    { strcpy(yylval.node.lexeme, yytext); return IMPORT; }
+"int"                       { strcpy(yylval.node.lexeme, yytext); return INT; }
+"char"                      { strcpy(yylval.node.lexeme, yytext); return CHAR; }
+"float"                     { strcpy(yylval.node.lexeme, yytext); return FLOAT; }
+"string"                    { strcpy(yylval.node.lexeme, yytext); return STRING; }
+"void"                      { strcpy(yylval.node.lexeme, yytext); return VOID; }
+"return"                    { strcpy(yylval.node.lexeme, yytext); return RETURN; }
+"input"                     { strcpy(yylval.node.lexeme, yytext); return INPUT; }
+"output"                    { strcpy(yylval.node.lexeme, yytext); return OUTPUT; }
+"switch"                    { strcpy(yylval.node.lexeme, yytext); return SWITCH; }
+"case"                      { strcpy(yylval.node.lexeme, yytext); return CASE; }
+"break"                     { strcpy(yylval.node.lexeme, yytext); return BREAK; }
+"continue"                  { strcpy(yylval.node.lexeme, yytext); return CONTINUE; }
+"default"                   { strcpy(yylval.node.lexeme, yytext); return DEFAULT; }
+"if"                        { strcpy(yylval.node.lexeme, yytext); return IF; }
+"else if"                      { strcpy(yylval.node.lexeme, yytext); return ELIF; }
+"else"                      { strcpy(yylval.node.lexeme, yytext); return ELSE; }
+"while"                     { strcpy(yylval.node.lexeme, yytext); return WHILE; }
+"for"                       { strcpy(yylval.node.lexeme, yytext); return FOR; }
+{digit}+                    { strcpy(yylval.node.lexeme, yytext); return INT_NUM; }
+{digit}*\.{digit}+          { strcpy(yylval.node.lexeme, yytext); return FLOAT_NUM;}
+{alpha}({alpha}|{digit})*   { strcpy(yylval.node.lexeme, yytext); return ID; }
+
+
+"<<"			            { strcpy(yylval.node.lexeme, yytext); return LEFTSHIFT; }
+">>"			            { strcpy(yylval.node.lexeme, yytext); return RIGHTSHIFT; }
+
+
+"<="                        { strcpy(yylval.node.lexeme, yytext); return LE; }
+">="                        { strcpy(yylval.node.lexeme, yytext); return GE; }
+"=="                        { strcpy(yylval.node.lexeme, yytext); return EQ; }
+"!="                        { strcpy(yylval.node.lexeme, yytext); return NE; }
+">"	                        { strcpy(yylval.node.lexeme, yytext); return GT; }
+"<"	                        { strcpy(yylval.node.lexeme, yytext); return LT; }
+"&&"	                    { strcpy(yylval.node.lexeme, yytext); return AND; }
+"||"	                    { strcpy(yylval.node.lexeme, yytext); return OR; }
+
+
+"+"                         { strcpy(yylval.node.lexeme, yytext); return ADD; }
+"-"                         { strcpy(yylval.node.lexeme, yytext); return SUBTRACT; }
+"/"                         { strcpy(yylval.node.lexeme, yytext); return DIVIDE; }
+"%"                         { strcpy(yylval.node.lexeme, yytext); return MODULO;}
+"*"                         { strcpy(yylval.node.lexeme, yytext); return MULTIPLY; }
+"="                         { strcpy(yylval.node.lexeme, yytext); return ASSIGN; }
+
+
+"&"			                { strcpy(yylval.node.lexeme, yytext); return BITAND; }
+"|"			                { strcpy(yylval.node.lexeme, yytext); return BITOR; }
+"~"			                { strcpy(yylval.node.lexeme, yytext); return NEGATION; }
+"^"			                { strcpy(yylval.node.lexeme, yytext); return XOR; }
+
+"!"					        { strcpy(yylval.node.lexeme, yytext); return NOT;}
+";"                         { strcpy(yylval.node.lexeme, yytext); return SCOL;}
+","                         { strcpy(yylval.node.lexeme, yytext); return COMMA;}
+"{"                         { strcpy(yylval.node.lexeme, yytext); return OF;}
+"("                         { strcpy(yylval.node.lexeme, yytext); return OC;}
+"["                         { strcpy(yylval.node.lexeme, yytext); return OS;}
+"}"                         { strcpy(yylval.node.lexeme, yytext); return CF;}
+")"                         { strcpy(yylval.node.lexeme, yytext); return CC;}
+"]"                         { strcpy(yylval.node.lexeme, yytext); return CS;}
+
+
+\/\/.*                      { printf("%s\n", yytext); }
+\/\*(.*\n)*.*\*\/           { ; } 
+[ \t]*                      { ; }
+[\n]                        { countn++; }
+["].*["]                    { strcpy(yylval.node.lexeme, yytext); return STR; }
+['].[']                     { strcpy(yylval.node.lexeme, yytext); return CHARACTER; }
+.                           { ; }
 
 %%
 
