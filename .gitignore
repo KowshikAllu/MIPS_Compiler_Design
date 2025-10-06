@@ -1,5 +1,8 @@
 stkasm_test_codes/
 tac-other/tac-stkasm.cpp
+flowchart.dot
+flowchart2.dot
+flowchart.png
 lex.yy.c
 parser.exe
 tac-vm.exe

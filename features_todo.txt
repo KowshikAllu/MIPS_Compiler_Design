@@ -17,6 +17,7 @@ Features:
 input, output
 all arithmetic and logical and bitwise and unary
 if else, for, while, arrays, line nos
+conditional jumps
 associativity
 symbol table
 error handling
@@ -25,25 +26,27 @@ type handling
 check declaration, multiple declarations, reserved words, type check
 symbol table print
 libraries
+tac
+.stkasm
 
 duplicate funcs check
 input output diff type of args
 error even if input commented in utils
 if input output rules are kept in .y then if it works evn if lib is not imported
 
-.stkasm
+i/p, o/p, error, contri, ppt
 check_scope func commented put at some places why
 switch case some err, code 3
 for int i = 0; i < 5;: i = i + 1:
+arr out of bounds error
+int a,b,c; error
+memory allocation?
 do while
 bool
 output("Hello, " << userName << "! You are " << userAge << " years old.\n");
 break, continue?
-functions
 scoping
 tac optimization
-memory allocation?
 reserved words error fix
-int a,b,c; error
 1. Pointers and structures are not introduced to the programming language yet.
 2. Line numbers in error messages in case of giving multiple files is not dealt with.

@@ -1,13 +1,21 @@
-import "math.kik";
 import "utils.kik";
 
 int main() {
-    int a;
-    int b;
-    int m;
-    input(a);
-    input(b);
-    m = max(a, b);
-    output(m);
+
+	//int a = 100;
+	//int b;
+	//int c;
+
+    //c = a + b;
+    //c = a - b;
+    //c = a * b;
+    //c = a / b;
+    //c = a % b;
+
+    int arr[5];
+    arr[2] = 100;
+
+    //int a;
+    //a = arr[0];
     return 0;
 }

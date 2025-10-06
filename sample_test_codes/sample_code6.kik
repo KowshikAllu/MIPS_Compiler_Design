@@ -1,15 +1,20 @@
-int a;
-int b;
-int c;
-a = 10;
-b = 5;
-c = 2;
+import "utils.kik";
 
-int result;
+int main() {
+    int a;
+    int b;
+    int c;
+    a = 10;
+    b = 5;
+    c = 2;
 
-// left-associative operators: -, /
-result = a - b - c;   // Interpreted as (a - b) - c
-result = a / b / c;   // Interpreted as (a / b) / c
+    int result;
 
-// right-associative operator: exponent (^)
-result = a ^ b ^ c;   // Interpreted as a ^ (b ^ c)
+    // left-associative operators: -, /
+    result = a - b - c;   // Interpreted as (a - b) - c
+    result = a / b / c;   // Interpreted as (a / b) / c
+
+    // right-associative operator: exponent (^)
+    result = a ^ b ^ c;   // Interpreted as a ^ (b ^ c)
+    return 0;
+}

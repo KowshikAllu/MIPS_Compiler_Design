@@ -15,6 +15,8 @@ int main(){
     func(number);
     //func2(number);
     strlen("hello");
+    string s = "kik code";
+    string s2 = "kik code2";
 
     int i;
     for (i = 2; i < number; i=i+1) {

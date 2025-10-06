@@ -1,3 +1,5 @@
+import "utils.kik";
+
 // Various operations using switch-case
 int main(){
 
