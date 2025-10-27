@@ -53,19 +53,20 @@ void label_optimize(){
     }
 }
 
-void print(){
-    for(auto i: tac){
-        for(auto j: i){
-            cout << j << " ";
-        }
-        cout << endl;
+void save_tac(const string &filename){
+    ofstream outfile(filename);
+    for(auto &line : tac){
+        for(auto &tok : line)
+            outfile << tok << " ";
+        outfile << "\n";
     }
+    outfile.close();
 }
 
 int main(){
     fstream newfile;
     // newfile.open("../test-cases/optimize1.txt",ios::in);
-    newfile.open("output/tac.txt",ios::in);
+    newfile.open("../output/tac.txt",ios::in);
     if (newfile.is_open()){
         string tp;
         while(getline(newfile, tp)){
@@ -76,16 +77,38 @@ int main(){
         newfile.close();
     }
 
-    // cout << "Before optimization: " << endl;
+    // Save before optimization
+    save_tac("bef_optimization.txt");
 
-    // print();
+    // Apply optimization
+    label_optimize();
 
-    // label_optimize();
-    
-    // cout << endl << "##########################################" << endl;
-    // cout << "After optimization: " << endl;
-
-    print();
+    // Save after optimization
+    save_tac("aft_optimization.txt");
 
     return 0;
 }
+
+// The function label_optimize() looks for two consecutive label definitions like:
+// #L1:
+// #L2:
+// with no instructions between them, and merges them — so all references to #L2 are replaced with #L1, and the redundant label line (#L2) is deleted.
+
+//! Before Optimization
+// #L1:
+// #L2:
+// a = b + c
+// goto #L2
+// #L3:
+// if a < b goto #L2
+// #L2:
+// return
+
+//! After Optimization
+// #L1:
+// a = b + c
+// goto #L1
+// #L3:
+// if a < b goto #L1
+// #L1:
+// return

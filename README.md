@@ -6,6 +6,12 @@ make run INPUT=example
 make clean
 make clean-all
 ```
+## Basic Optimization-
+```bash
+cd Optimization
+g++ layer1.cpp -o layer1
+.\layer1
+```
 > **NOTE of Versions:**
 >  - flex 2.6.4
 >  - bison++ Version 1.21.9-1
