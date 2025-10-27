@@ -1,7 +1,7 @@
 import "utils.kik";
 
 // Various operations using switch-case
-int main(){
+int kik(){
 
 	int a;
 	int b;

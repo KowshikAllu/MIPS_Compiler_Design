@@ -1,9 +1,10 @@
 # MIPS_Compiler_Design
 ## How to Run-
 ```bash
-make fname=test    # Run lexer on sample programs
-./parser <inpput_file>      # eg. `./parser inp1`
-make clean      # Clean build artifacts
+make run
+make run INPUT=example
+make clean
+make clean-all
 ```
 > **NOTE of Versions:**
 >  - flex 2.6.4

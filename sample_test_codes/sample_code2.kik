@@ -2,7 +2,7 @@
 // re-declaration
 import "utils.kik";
 
-int main() {
+int kik() {
     float f;
 
     output("Enter a float number: ");

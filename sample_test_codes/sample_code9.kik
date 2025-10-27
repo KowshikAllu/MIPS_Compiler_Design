@@ -1,8 +1,16 @@
-//import "io.kik";
-//int kik() {
-    int a = 8;
-    int b = 90;
-    int result = a + b;
-    output("Final output after adding: " << result << "\n");
-//    return 0;
-//}
+import "utils.kik";
+import "utils.kik";
+
+void func(int number) {
+    // null
+}
+
+int kik(){
+
+	int number;
+
+	output("Enter the number: ");
+	input(number);
+    func2(number);          // ERROR
+    return 0;
+}

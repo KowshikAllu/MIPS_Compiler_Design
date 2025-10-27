@@ -100,7 +100,7 @@
     string curr_func_name;
     vector<string> curr_func_param_type;
 
-    vector<string> reserved = {"import", "int", "float", "char", "string", "void", "if", "else", "for", "while", "break", "continue", "main", "return", "switch", "case", "input", "output"};
+    vector<string> reserved = {"import", "int", "float", "char", "bool", "string", "void", "if", "else", "for", "while", "break", "continue", "kik", "return", "switch", "case", "input", "output"};
 
 %}
 
@@ -121,7 +121,7 @@
     } node;
 }
 
-%token <node> IMPORT INT CHAR FLOAT STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STR CHARACTER CC OC CS OS CF OF COMMA COLON SCOL SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE
+%token <node> IMPORT INT CHAR FLOAT BOOL STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STR CHARACTER CC OC CS OS CF OF COMMA COLON SCOL SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE
 
 %type <node> Program import_list import_stmt func func_list func_prefix param_list param stmt_list stmt declaration return_stmt data_type func_data_type expr primary_expr unary_expr unary_op const assign if_stmt elif_stmt else_stmt switch_stmt case_stmt case_stmt_list while_loop_stmt for_loop_stmt postfix_expr func_call arg_list arg
 
@@ -145,7 +145,6 @@ Program         :       import_list func_list
 
 import_list     :       import_list import_stmt
                         |
-                        //! IS EMPTY REQUIRED????????????????-------------------- 
                         ;
 
 import_stmt     :       IMPORT STR SCOL {
@@ -363,6 +362,7 @@ return_stmt     :       RETURN expr {
 data_type       :       INT { strcpy($$.type, "INT"); }
                         |   CHAR { strcpy($$.type, "CHAR"); }
                         |   FLOAT { strcpy($$.type, "FLOAT"); }
+                        |   BOOL { strcpy($$.type, "BOOL"); }
                         ;
 
 expr            :       expr ADD expr { 
@@ -828,7 +828,7 @@ assign          :       ID ASSIGN expr {
 
 if_stmt         :       IF {
                             sprintf($1.parentNext, "#L%d", label_counter++);
-                        } OC expr CC { 
+                        } expr COLON { 
                             tac.push_back("if " + string($4.lexeme) + " GOTO #L" + to_string(label_counter) + " else GOTO #L" + to_string(label_counter+1));
                             sprintf($4.if_body, "#L%d", label_counter++);
                             sprintf($4.else_body, "#L%d", label_counter++); 
@@ -851,7 +851,7 @@ elif_stmt       :       ELIF {
                             string str = tac[tac.size() - 2].substr(5);
                             char* hold = const_cast<char*>(str.c_str());
                             sprintf($1.parentNext, "%s", hold);
-                        } OC expr CC {
+                        } expr COLON {
                             tac.push_back("if " + string($4.lexeme) + " GOTO #L" + to_string(label_counter) + " else GOTO #L" + to_string(label_counter+1));
                             sprintf($4.if_body, "#L%d", label_counter++);
                             sprintf($4.else_body, "#L%d", label_counter++); 
@@ -869,7 +869,7 @@ elif_stmt       :       ELIF {
                         |
                         ;
 
-else_stmt       :       ELSE OF {
+else_stmt       :       ELSE COLON OF {
                             scope_history.push(++scope_counter);
                         } stmt_list CF {
                             scope_history.pop(); --scope_counter;
@@ -924,7 +924,7 @@ while_loop_stmt :       WHILE {
                             sprintf($1.loop_body, "#L%d", label_counter); 
                             loop_continue.push(label_counter++);
                             tac.push_back("\n" + string($1.loop_body) + ":");
-                        } OC expr CC {
+                        } expr COLON {
                             sprintf($4.if_body, "#L%d", label_counter++); 
 
                             loop_break.push(label_counter);
@@ -946,10 +946,10 @@ while_loop_stmt :       WHILE {
                             loop_break.pop();
                         }
 
-for_loop_stmt   :       FOR OC assign SCOL {
+for_loop_stmt   :       FOR assign SCOL {
                             sprintf($1.loop_body, "#L%d", label_counter++); 
                             tac.push_back("\n" + string($1.loop_body) + ":");
-                        } expr SCOL {  
+                        } expr SCOL COLON {  
                             sprintf($6.if_body, "#L%d", label_counter++); 
 
                             loop_break.push(label_counter);
@@ -962,7 +962,7 @@ for_loop_stmt   :       FOR OC assign SCOL {
                             tac.push_back("\n" + string($6.loop_body) + ":");
 
                             if(const_temps.find(string($6.lexeme)) == const_temps.end() && $6.lexeme[0] == '@') free_temp.push(string($6.lexeme));
-                        } assign CC {
+                        } assign COLON {
                             tac.push_back("GOTO " + string($1.loop_body));
                             tac.push_back("\n" + string($6.if_body) + ":");
                         } OF {

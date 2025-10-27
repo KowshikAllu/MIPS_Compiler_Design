@@ -15,10 +15,10 @@ char func(int a, int b) {
 }
 
 // Ascii values 
-int main(){
+int kik(){
 	char arr[5] = {'v', 'w', 'x', 'y', 'z'};
 	int i;
-	for(i=0; i<5; i=i+1){
+	for i=0; i<5;: i=i+1: {
 		output("Ascii value of ");
 		output(arr[i]);
 		output(" is ");

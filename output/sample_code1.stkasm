@@ -1,0 +1,55 @@
+.text
+.global func
+.global kik
+.global output
+.global input
+.global strlen
+func:
+ret
+kik:
+invoke output 1
+invoke input 1
+invoke func 2
+invoke strlen 1
+istr 0 "kik code"
+istr 1 "kik code2"
+iconst 2
+label #L0:
+iconst local 3
+iconst local 0
+lt INT
+iconst local 4
+if-jmp #L1
+jmp #L2
+label #L3:
+iconst 1
+iconst local 3
+iconst temp 6
+iadd INT
+jmp #L0
+label #L1:
+iconst local 0
+iconst local 3
+imod INT
+iconst 0
+iconst temp 7
+iconst temp 8
+eq INT
+iconst temp 9
+not INT
+iconst local 5
+if-jmp #L5
+jmp #L6
+label #L5:
+jmp #L3
+jmp #L4
+label #L6:
+invoke output 1
+iconst 0
+ret
+label #L4:
+jmp #L3
+label #L2:
+invoke output 1
+iconst 0
+ret

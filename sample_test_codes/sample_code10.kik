@@ -1,12 +1,14 @@
-//import "io.kik";
-//int kik() {
-    int age = 25;
-    float pi = 3.14;
-    bool isKik = true;
-    int x, y, z = 100;
-    constant str GREETING = "Hello!";
-    output("Age: " << age << "\n");
-    output("Z value: " << z << "\n");
-    output(GREETING << "\n");
-//    return 0;
-//}
+// type-check
+import "utils.kik";
+
+int kik() {
+    char c;
+    float f;
+
+    char c;
+    // string bool;
+
+    c = 5.7;   // ERROR: assigning FLOAT to CHAR
+    f = 'A';   // ERROR: assigning CHAR to FLOAT
+    return 0;
+}

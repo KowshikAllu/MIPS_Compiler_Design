@@ -1,21 +1,15 @@
-import "utils.kik";
+ import "utils.kik";
 
-int main() {
-
-	//int a = 100;
-	//int b;
-	//int c;
-
-    //c = a + b;
-    //c = a - b;
-    //c = a * b;
-    //c = a / b;
-    //c = a % b;
-
-    int arr[5];
-    arr[2] = 100;
-
-    //int a;
-    //a = arr[0];
+ int kik() {
+    int score = 85;
+    
+    if score >= 90: {
+        //cout << "Grade: A" << endl;
+    } else if score >= 80: {
+        //cout << "Grade: B" << endl;
+    } else: {
+        //cout << "Grade: C or lower" << endl;
+    }
+    
     return 0;
 }

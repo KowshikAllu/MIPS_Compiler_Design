@@ -1,9 +1,14 @@
 To Run:
+make all
 make run INPUT=sample_code1
 
---------------------------------
+make clean
+make clean-all
+----------------------------------
 
 strings data_type
+.stkasm- .text, .code, lw, sw
+address??
 
 scope_history, scope_counter in if stmts
 if to add libs -> change in valid_libs, import_stmt, func_call
@@ -16,7 +21,7 @@ GitHub push, readme
 Features:
 input, output
 all arithmetic and logical and bitwise and unary
-if else, for, while, arrays, line nos
+if else, for, while, arrays, switch-case, line nos
 conditional jumps
 associativity
 symbol table
@@ -29,14 +34,25 @@ libraries
 tac
 .stkasm
 
+Function 'max' used without importing \"math.kik\" at line
 duplicate funcs check
 input output diff type of args
 error even if input commented in utils
 if input output rules are kept in .y then if it works evn if lib is not imported
 
-i/p, o/p, error, contri, ppt
+STKASM:
+scratch registers- iconst local 5
+local- A local variable slot in the current function’s stack frame. (user-declared variables)
+temp- A compiler-generated temporary variable used for intermediate results. (compiler-generated temporaries)
+istr 0 "kik code"- Define string "kik code" as string index 0
+temp 7 → result of number % i
+temp 8 → result of comparison == 0
+temp 9 → result of not (negation)
+temp 6 → result of i + 1
+each function has its own stack frame, and temps live inside that frame — not shared globally.
+
+input, output in console
 check_scope func commented put at some places why
-switch case some err, code 3
 for int i = 0; i < 5;: i = i + 1:
 arr out of bounds error
 int a,b,c; error

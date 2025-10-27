@@ -10,7 +10,7 @@ $(shell mkdir -p $(OUT_DIR))
 
 all: parser vm stkasm
 
-run: parser vm stkasm
+run:
 	./parser < $(SRC_DIR)/$(INPUT).kik > tac.txt;\
 	./tac-vm > $(INPUT).vm;\
 	./tac-stkasm > $(INPUT).stkasm;\
@@ -33,6 +33,9 @@ lex.yy.c: test.l
 	lex test.l
 	
 clean:
+	rm -rf $(OUT_DIR)
+
+clean-all:
 	rm -f parser y.tab.c lex.yy.c y.tab.h y.output a.out tac-vm tac-stkasm tac.txt *.vm symboltable.txt
 	rm -f $(filter-out $(wildcard test*.stkasm), $(wildcard *.stkasm))
 	rm -rf $(OUT_DIR)

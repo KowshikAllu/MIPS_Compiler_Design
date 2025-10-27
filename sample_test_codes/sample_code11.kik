@@ -1,12 +1,26 @@
-//import "io.kik";
-//int kik() {
-    int a = 10;
-    int b = 5;
-    int result = (a * 2) + b;
-    if result == 25: {
-        output("Expression evaluated correctly!\n");
-    } else: {
-        output("Expression evaluation failed.\n");
-    }
-//    return 0;
-//}
+// type-check
+import "utils.kik";
+
+int func() {
+    int a;
+    // ERROR: no return
+}
+
+void func() {
+    int b;
+}
+
+void func2 (int a) {
+
+}
+
+int kik() {
+    char c;
+    float f;
+    int d = strlen(c, f);
+    func2(a, b);
+    func2();
+    c = 5.7;   // ERROR: assigning FLOAT to CHAR
+    f = 'A';   // ERROR: assigning CHAR to FLOAT
+    return 0;
+}

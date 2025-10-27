@@ -1,6 +1,6 @@
 import "utils.kik";
 
-int main() {
+int kik() {
     int a;
     int b;
     int c;
