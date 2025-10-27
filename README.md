@@ -11,9 +11,8 @@ make clean-all
 >  - bison++ Version 1.21.9-1
 
 **NOTE of inputs:** 
-  - inp1 is for associativity check
-  - inp2 is for if and nested-if
-  - inp3 is for scope check
+  - Find inputs in `sample_test_codes` folder
+  - Find output in `output` folder
 
 ---
 
@@ -93,12 +92,10 @@ Once the syntax is validated, the next step is to produce an intermediate repres
   - Implemented TAC (Three Address Code) generation functions.
   - Handled assignment, arithmetic, relational operators.
   - Implemented backpatching for control flow (if, while).
-
 - Akshatha:
   - Designed structs for TAC storage (True, False, next, lexval, code).
   - Managed label creation and linking for conditional jumps.
   - Extended grammar actions to generate TAC inline.
-
 - Sai Kowshik:
   - Designed and implemented the symbol table structure.
   - Maintained entries (name, type, size, offset).
@@ -106,18 +103,88 @@ Once the syntax is validated, the next step is to produce an intermediate repres
 
 ---
 
-## PFA-
-### 🔹 Associativity
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/6335909a-ecc1-4851-ba73-aa64442dc286" alt="Associativity" width="800" />
-</p>
+## Module 4 - Function Implementation [Date: 15th Sep, 2025]
 
-### 🔹 If and Nested-If
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/c78e705e-6fa5-4bf3-9eaa-4139d3add86a" alt="If and Nested-If" width="800" />
-</p>
+### Overview
+Implemented the function subsystem of the KIK compiler: declaration, parameter handling, scoping, return checks, and integration with TAC generation. Added semantic checks (duplicate function names, missing return statements for non-void functions) and maintained a function table with signatures and parameter lists.
 
-### 🔹 Scoping
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/5e637590-ccbe-42af-937c-aa2efd72e10e" alt="Scoping" width="800" />
-</p>
+### Work Done
+- Added stack frame setup and teardown for each function.
+- Managed local and temporary variables separately per call.
+- Enabled basic function call and return mechanism.
+
+### Contributions
+- Akash:
+  - Implemented stack-based function call logic and local variable management.
+- Akshatha:
+  - Worked on parameter passing and return value handling in the stack frame.
+- Sai Kowshik:
+  - Created test programs to validate function behavior and debugged stack-related issues.
+
+---
+
+## Module 5 - .stkasm Generation [Date: 22nd Sep, 2025]
+
+### Overview
+Translated Three Address Code (TAC) to custom stack assembly (.stkasm) for low-level execution.
+
+### Work Done
+- Mapped TAC instructions to stack operations (iconst, istr, invoke, if-jmp, etc.).
+- Implemented label handling for loops and conditionals.
+- Generated separate .stkasm files for each Kik program.
+
+### Contributions
+- Akash:
+  - Developed translation logic from TAC to .stkasm and verified correctness.
+- Akshatha:
+  - Added support for control flow and function call assembly conversion.
+- Sai Kowshik:
+  - Validated .stkasm output with sample programs and debugged label jumps.
+
+---
+
+## Module 6 - Error & Type Handling [Date: 6th Oct, 2025]
+
+### Overview
+Implemented error detection and type management in the Kik compiler to ensure code correctness and enforce language rules.
+
+### Work Done
+- Added checks for variable declarations before use.
+- Detected multiple declarations of the same variable.
+- Reserved keywords validation to prevent misuse as identifiers.
+- Introduced type checking for expressions and assignments.
+- Displayed clear error messages during parsing and semantic analysis.
+
+### Contributions
+- Akash:
+  - Implemented variable declaration validation and type-checking logic.
+- Akshatha:
+  - Added reserved word detection and semantic error reporting.
+- Sai Kowshik:
+  - Tested various invalid programs to verify proper error detection and message formatting.
+
+---
+
+## Module 7 - TAC Optimization [Date: 18th Oct, 2025]
+
+### Overview
+Developed optimization techniques for Three Address Code (TAC) to improve execution efficiency and reduce redundant operations.
+
+### Work Done
+- Implemented label optimization to merge consecutive labels.
+- Replaced redundant label references across TAC lines.
+- Removed unnecessary jump targets and unused labels.
+- Designed tokenization logic for parsing TAC lines.
+- Verified correctness by comparing TAC before and after optimization.
+
+### Contributions
+- Akash:
+  - Wrote core label optimization logic and handled TAC parsing.
+
+- Akshatha:
+  - Integrated replacement and deletion of redundant labels.
+
+- Sai Kowshik:
+  - Tested optimization results and validated correctness of transformed TAC output.
+
+---
