@@ -1,15 +1,14 @@
- import "utils.kik";
+import "io.kik";
 
- int kik() {
-    int score = 85;
-    
-    if score >= 90: {
-        //cout << "Grade: A" << endl;
-    } else if score >= 80: {
-        //cout << "Grade: B" << endl;
-    } else: {
-        //cout << "Grade: C or lower" << endl;
-    }
-    
+int add(int a, int b) {
+    int result = 20;
+    a = a + b;
+    int c = 2;
+    return a+b + c + result;
+}
+
+int main() {
+    int result = 5;
+    int c = add(result, 10);
     return 0;
 }

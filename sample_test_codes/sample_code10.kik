@@ -1,5 +1,5 @@
 // type-check
-import "utils.kik";
+import "io.kik";
 
 int kik() {
     char c;

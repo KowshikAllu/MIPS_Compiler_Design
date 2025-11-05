@@ -1,5 +1,5 @@
 // Check whether it's a prime number 
-import "utils.kik";
+import "io.kik";
 import "string.kik";
 
 void func(int number, int num2) {
@@ -18,8 +18,7 @@ int kik(){
     string s = "kik code";
     string s2 = "kik code2";
 
-    int i;
-    for i = 2; i < number;: i=i+1: {
+    for int i = 2; i < number;: i=i+1: {
         if number % i != 0 : {
             continue;
         }

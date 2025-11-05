@@ -1,0 +1,33 @@
+# Auto-generated .stkasm from TAC
+.text
+
+.global add
+add:
+    iconst 20
+    istore result
+    iload a
+    iload b
+    iadd
+    istore a
+    iconst 2
+    istore c
+    iload a
+    iload b
+    iadd
+    iload @t2
+    iload c
+    iadd
+    iload @t3
+    iload result
+    iadd
+    ret
+
+.global main
+main:
+    iconst 5
+    istore result
+    iload result
+    invoke add 2
+    istore c
+    iconst 0
+    ret

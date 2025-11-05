@@ -1,0 +1,13 @@
+// Sample If Else Code
+import "io.kik";
+
+int kik(){
+
+    if 2 < 5 : {
+        output("This is IF Stmt\n");
+    }
+    else: {
+        output("This is ELSE Stmt\n");
+	}
+    return 0;
+}

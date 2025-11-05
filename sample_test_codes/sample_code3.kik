@@ -1,4 +1,4 @@
-import "utils.kik";
+import "io.kik";
 
 // Various operations using switch-case
 int kik(){

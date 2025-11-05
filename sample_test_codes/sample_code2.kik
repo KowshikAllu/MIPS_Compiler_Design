@@ -1,6 +1,6 @@
 ﻿//floor and ceil of floating point integer
 // re-declaration
-import "utils.kik";
+import "io.kik";
 
 int kik() {
     float f;

@@ -63,7 +63,7 @@
         int line_number; 
     };
 
-    set<string> valid_libs = {"\"utils.kik\"", "\"string.kik\"", "\"math.kik\"", "\"io.kik\""};
+    set<string> valid_libs = {"\"io.kik\"", "\"string.kik\"", "\"math.kik\"", "\"io.kik\""};
     set<string> imported_libs;
     vector<string> tac;
     map<string, string> temp_map;
@@ -158,7 +158,7 @@ import_stmt     :       IMPORT STR SCOL {
                             else {
                                 imported_libs.insert(lib);
                                 // Auto-register built-in library functions if needed
-                                if (lib == "\"utils.kik\"") {
+                                if (lib == "\"io.kik\"") {
                                     func_info input_func;
                                     input_func.return_type = "VOID";
                                     input_func.num_params = 1;
@@ -946,7 +946,7 @@ while_loop_stmt :       WHILE {
                             loop_break.pop();
                         }
 
-for_loop_stmt   :       FOR assign SCOL {
+for_loop_stmt   :       FOR declaration {
                             sprintf($1.loop_body, "#L%d", label_counter++); 
                             tac.push_back("\n" + string($1.loop_body) + ":");
                         } expr SCOL COLON {  
@@ -984,9 +984,9 @@ func_call       :       ID {
                                 sem_errors.push_back("Function '" + func_name + "' not declared before use at line " + to_string(countn + 1));
                             } else {
                                 if ((func_name == "input" || func_name == "output") &&
-                                    imported_libs.find("\"utils.kik\"") == imported_libs.end()) {
+                                    imported_libs.find("\"io.kik\"") == imported_libs.end()) {
                                     sem_errors.push_back("Function '" + func_name +
-                                        "' used without importing \"utils.kik\" at line " + to_string(countn + 1));
+                                        "' used without importing \"io.kik\" at line " + to_string(countn + 1));
                                 }
                                 if (func_name == "strlen" &&
                                     imported_libs.find("\"string.kik\"") == imported_libs.end()) {

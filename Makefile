@@ -8,14 +8,18 @@ SRC_DIR = sample_test_codes
 OUT_DIR = output
 $(shell mkdir -p $(OUT_DIR))
 
-all: parser vm stkasm
+all: parser vm stkasm stkasm2
 
 run:
 	./parser < $(SRC_DIR)/$(INPUT).kik > tac.txt;\
 	./tac-vm > $(INPUT).vm;\
 	./tac-stkasm > $(INPUT).stkasm;\
+	./tac-stkasm2 > $(INPUT).stkasm2;\
 	mkdir -p $(OUT_DIR);\
-	mv tac.txt $(INPUT).vm $(INPUT).stkasm symboltable.txt $(OUT_DIR)/
+	mv tac.txt $(INPUT).vm $(INPUT).stkasm output.stkasm $(INPUT).stkasm2 symboltable.txt $(OUT_DIR)/
+
+stkasm2: tac-other/tac-stkasm2.cpp
+	g++ tac-other/tac-stkasm2.cpp -o tac-stkasm2
 
 stkasm: tac-other/tac-stkasm.cpp
 	g++ tac-other/tac-stkasm.cpp -o tac-stkasm
@@ -38,4 +42,5 @@ clean:
 clean-all:
 	rm -f parser y.tab.c lex.yy.c y.tab.h y.output a.out tac-vm tac-stkasm tac.txt *.vm symboltable.txt
 	rm -f $(filter-out $(wildcard test*.stkasm), $(wildcard *.stkasm))
+	rm -f $(filter-out $(wildcard test*.stkasm2), $(wildcard *.stkasm2))
 	rm -rf $(OUT_DIR)

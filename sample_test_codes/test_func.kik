@@ -1,0 +1,12 @@
+// Sample Function Code 
+import "io.kik";
+
+void func(int number, int num2) {
+    output("This is a function\n");
+}
+
+int kik(){
+    int number;
+    func(number, number);
+    return 0;
+}

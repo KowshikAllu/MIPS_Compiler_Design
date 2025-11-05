@@ -1,0 +1,10 @@
+// Sample For Code
+import "io.kik";
+
+int kik(){
+    for int i = 2; i < 10;: i=i+1: {
+        output("This is for loop: ");
+        output(i);
+    }
+    return 0;
+}

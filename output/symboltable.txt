@@ -1,34 +1,27 @@
 ======================= SYMBOL TABLE =======================
 
-Function: kik
+Function: main
 Return Type: INT
 Parameters: 0
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
-i              INT       1       No      0         21        
-s2             STR       1       No      11        19        
-s              STR       1       No      10        18        
-number         INT       1       No      0         11        
+c              INT       1       No      0         12        
+result         INT       1       No      0         11        
 
-Function: func
-Return Type: void
+Function: add
+Return Type: INT
 Parameters: 2
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
-num2           INT       1       No      0         5         
-number         INT       1       No      0         5         
+c              INT       1       No      0         6         
+result         INT       1       No      0         4         
+b              INT       1       No      0         3         
+a              INT       1       No      0         3         
 
 Function: output
 Return Type: VOID
-Parameters: 1
-------------------------------------------------------------
-Variable       Type      Scope   Array?  Size      Line      
-------------------------------------------------------------
-
-Function: strlen
-Return Type: INT
 Parameters: 1
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      

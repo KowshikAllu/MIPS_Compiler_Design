@@ -7,8 +7,16 @@ make clean-all
 ----------------------------------
 
 strings data_type
-.stkasm- .text, .code, lw, sw
+.stkasm- .text, .code
+lw, sw
 address??
+libs???
+OOPS?????????
+if-jmp remove and bne beq...
+init arr to 0
+for int i;
+int i, j;
+output("\n); not supported
 
 optimization
 scope_history, scope_counter in if stmts
@@ -38,7 +46,7 @@ tac
 Function 'max' used without importing \"math.kik\" at line
 duplicate funcs check
 input output diff type of args
-error even if input commented in utils
+error even if input commented in io
 if input output rules are kept in .y then if it works evn if lib is not imported
 
 STKASM:

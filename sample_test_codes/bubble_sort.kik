@@ -1,0 +1,29 @@
+import "io.kik";
+
+int kik() {
+    int numbers[5]= {4, 1, 5, 2, 3};
+    int temp;
+
+    // Bubble Sort Logic
+    for int i = 0; i < 4;: i = i + 1: {
+        for int j = 0; j < 4 - i;: j = j + 1: {
+            
+            if numbers[j] > numbers[j+1]: {
+                // Swap the numbers
+                temp = numbers[j];
+                numbers[j] = numbers[j+1];
+                numbers[j+1] = temp;
+            }
+            
+        }
+    }
+
+    // Print the sorted array
+    output("Sorted: ");
+    for int i = 0; i < 5;: i = i + 1: {
+        output(numbers[i]);
+        output(" ");
+    }
+
+    return 0;
+}

@@ -1,11 +1,8 @@
-// KIK Standard Library: I/O Helpers
-// Filename: io.kik
+// io.kik — built-in utility library
+// Provides basic I/O functions for the Kik language
 
-/*
- * Prints a string to the console, followed by a newline character.
- * This is a convenient wrapper around the basic output() function.
- */
-void println(str message) {
-    output(message);
-    output("\n");
-}
+void input(INT var);
+void input(FLOAT var);
+void input(STRING var);
+void output(STRING msg);
+void output(INT var);
