@@ -1,4 +1,4 @@
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
 using namespace std;
 
 // Function to trim whitespace from both ends of a string
@@ -10,8 +10,12 @@ string trim(const string &s) {
     return out.substr(start, end - start + 1);
 }
 
+// FIXED: Helper function to check if a string is a number
+bool is_number(const string& s) {
+    return !s.empty() && find_if(s.begin(), s.end(), [](unsigned char c) { return !isdigit(c); }) == s.end();
+}
+
 int main() {
-    // NOTE: This assumes your TAC is in 'tac.txt'
     ifstream tacFile("tac.txt");
     ofstream stkFile("output.stkasm");
 
@@ -24,49 +28,83 @@ int main() {
     stkFile << ".text\n";
     
     string line;
-    // Stores constant values for temporaries, e.g., @t1 -> "0"
     unordered_map<string, string> tempValues; 
-    smatch matches; // For regex results
+    smatch matches; 
+
+    unordered_map<string, int> varIndex;
+    int nextVarIndex = 0;
 
     while (getline(tacFile, line)) {
         line = trim(line);
         
-        // Skip empty lines and full-line comments (but not labels)
         if (line.empty() || (line[0] == '#' && line.find("#L") != 0))
             continue;
 
         // --- Function/Method Definition (Label and Global Export) ---
-        // func: void OR kik: INT
-        if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*): (INT|void)"))) {
+        if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*): (INT|void|VOID)"))) {
             string func_name = matches[1];
             stkFile << "\n.global " << func_name << "\n";
             stkFile << func_name << ":\n";
+            
+            varIndex.clear();
+            nextVarIndex = 0;
+            
+            continue;
+        }
+
+        // --- Argument Declaration ---
+        // - arg INT number
+        if (regex_match(line, matches, regex("- arg (INT|STR) ([a-zA-Z_][a-zA-Z0-9_]*)"))) {
+            string var_name = matches[2];
+            if (varIndex.find(var_name) == varIndex.end()) {
+                varIndex[var_name] = nextVarIndex++;
+            }
+            continue; 
+        }
+
+        // --- Variable Declaration ---
+        // - INT result
+        if (regex_match(line, matches, regex("- (INT|STR) ([a-zA-Z_][a-zA-Z0-9_]*)"))) {
+            string var_name = matches[2];
+            if (varIndex.find(var_name) == varIndex.end()) {
+                varIndex[var_name] = nextVarIndex++;
+            }
+            continue; 
+        }
+
+        // --- Array Declaration (Allocation and Initialization) ---
+        // - INT numbers [ 5 ]
+        if (regex_match(line, matches, regex("- INT ([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([0-9]+) \\]"))) {
+            string arr_name = matches[1];
+            string arr_size = matches[2];
+
+            if (varIndex.find(arr_name) == varIndex.end()) {
+                varIndex[arr_name] = nextVarIndex++;
+            }
+            
+            stkFile << "    iconst " << arr_size << "\n";
+            stkFile << "    newarray INT\n"; 
+            stkFile << "    astore " << varIndex[arr_name] << "\n"; // Use index
             continue;
         }
 
         // --- Unary Operator (Logical NOT ~) ---
-        // @t9 = ~ @t10 INT
         if (regex_match(line, matches, regex("(@t[0-9]+) = ~ (@t[0-9]+) INT"))) {
-            string rhs = matches[2]; // The temporary variable being negated
-
-            // Load the temporary value onto the stack
+            string rhs = matches[2]; 
             if (tempValues.count(rhs)) {
                 stkFile << "    iconst " << tempValues[rhs] << "\n";
             } 
-            
-            stkFile << "    inot\n"; // Pushes 0 if input was 1, and 1 if input was 0
+            stkFile << "    inot\n"; 
             continue;
         }
 
         // --- Label ---
-        // #L0:
         if (line.find("#L") == 0 && line.find(":") != string::npos) {
             stkFile << line << "\n";
             continue;
         }
 
         // --- Constant Assignment ---
-        // @t0 = 2 INT (Value is stored in the map)
         if (regex_match(line, matches, regex("(@t[0-9]+) = ([0-9]+) INT"))) {
             string name = matches[1];
             string val = matches[2];
@@ -74,67 +112,65 @@ int main() {
             continue;
         }
 
-        //!! --- Array Declaration (Allocation and Initialization) ---
-        // - INT numbers [ 5 ]
-        // if (regex_match(line, matches, regex("- INT ([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([0-9]+) \\]"))) {
-        //     string arr_name = matches[1];
-        //     string arr_size = matches[2];
-
-        //     stkFile << "    iconst " << arr_size << "\n";      // 1. Push array size (e.g., 5)
-        //     stkFile << "    newarray INT\n";                 // 2. Allocate and initialize all elements to 0
-        //     stkFile << "    astore " << arr_name << "\n";    // 3. Store the array reference in the local variable
-        //     continue;
-        // }
-
         // --- Array Initialization (iastore) ---
-        // numbers [ 0 ] = 4 INT
         if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([0-9]+) \\] = ([0-9]+) INT"))) {
             string arr_name = matches[1];
             string index = matches[2];
             string val = matches[3];
-            // Stack order for iastore: [reference, index, value]
-            stkFile << "    iconst " << val << "\n";    // Push value
-            stkFile << "    iconst " << index << "\n";  // Push index
-            stkFile << "    iastore " << arr_name << "\n"; // Store value at index
+            
+            stkFile << "    aload " << varIndex[arr_name] << "\n";
+            stkFile << "    iconst " << index << "\n"; 
+            stkFile << "    iconst " << val << "\n";    
+            stkFile << "    iastore\n"; 
             continue;
         }
         
         // --- Array Access (iaload) ---
-        // @t5 = numbers [ i ] INT
+        // FIXED: Regex to allow multi-character variable names
         if (regex_match(line, matches, regex("(@t[0-9]+) = ([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([a-zA-Z_][a-zA-Z0-9_]*) \\] INT"))) {
             string arr_name = matches[2];
             string index_var = matches[3];
             
-            stkFile << "    iload " << index_var << "\n";   // Push index (e.g., value of i)
-            stkFile << "    iaload " << arr_name << "\n";  // Pop index, push value from array
+            stkFile << "    aload " << varIndex[arr_name] << "\n"; 
+            stkFile << "    iload " << varIndex[index_var] << "\n"; 
+            stkFile << "    iaload\n"; 
             continue; 
         }
 
-        // --- Arithmetic/Comparison Operations (Extended to include Modulo %) ---
-        // @t2 = i < @t1 INT
-        // @t4 = i + @t3 INT
-        // @t7 = number % i INT  <-- NEW
-        if (regex_match(line, matches, regex("(@t[0-9]+) = (.+) (\\+|\\<|%) (.+) INT"))) { // <--- Added '|%'
+        // --- Arithmetic/Comparison Operations ---
+        if (regex_match(line, matches, regex("(@t[0-9]+) = (.+) (\\+|\\<|%|==) (.+) INT"))) { 
             string a = trim(matches[2]);
             string op = trim(matches[3]);
             string b = trim(matches[4]);
 
-            // ... [Code for Operand 1 (a) and Operand 2 (b) remains the same] ...
-            // Operand 1 (a)
-            if (tempValues.count(a)) {
-                stkFile << "    iconst " << tempValues[a] << "\n";
+            // --- Handle Operand 1 (a) ---
+            if (a.rfind("@t", 0) == 0) {
+                // It's a temporary (e.g., @t2), value is already on stack.
+                // But if it's a CONSTANT temporary, we need to push it.
+                if (tempValues.count(a)) {
+                    stkFile << "    iconst " << tempValues[a] << "\n";
+                }
+            } else if (is_number(a)) { // FIXED: Check if it's a raw number
+                stkFile << "    iconst " << a << "\n";
             } else {
-                stkFile << "    iload " << a << "\n";
+                // It's a variable
+                stkFile << "    iload " << varIndex[a] << "\n"; // Use index
             }
 
-            // Operand 2 (b)
-            if (tempValues.count(b)) {
-                stkFile << "    iconst " << tempValues[b] << "\n";
+            // --- Handle Operand 2 (b) ---
+            if (b.rfind("@t", 0) == 0) {
+                // It's a temporary (e.g., @t3), value is already on stack.
+                if (tempValues.count(b)) {
+                    stkFile << "    iconst " << tempValues[b] << "\n";
+                }
+            } else if (is_number(b)) { // FIXED: Check if it's a raw number
+                stkFile << "    iconst " << b << "\n";
             } else {
-                stkFile << "    iload " << b << "\n";
+                // It's a variable
+                stkFile << "    iload " << varIndex[b] << "\n"; // Use index
             }
 
-            // Operation (Extended)
+            // --- Operation ---
             if (op == "+") stkFile << "    iadd\n";
             if (op == "<") stkFile << "    ilt\n";
             if (op == "%") stkFile << "    imod\n";
@@ -144,32 +180,36 @@ int main() {
         }
 
         // --- Variable Assignment (istore) ---
-        // i = @t0 INT 
         if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) = (@t[0-9]+) INT"))) {
             string lhs = matches[1];
             string rhs = matches[2];
 
             if (tempValues.count(rhs)) {
-                // Assignment from a *constant* temporary
                 stkFile << "    iconst " << tempValues[rhs] << "\n";
             } 
-            // If not a constant temp, the value is already on the stack from a previous operation.
             
-            stkFile << "    istore " << lhs << "\n"; // Pop value from stack, store in var
+            if (varIndex.find(lhs) == varIndex.end()) {
+                 varIndex[lhs] = nextVarIndex++;
+            }
+            stkFile << "    istore " << varIndex[lhs] << "\n"; 
             continue;
         }
 
         // --- String Assignment (s = "kik code" STR) ---
+        // FIXED: Regex to allow multi-character var names and full strings
         if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) = \"(.*)\" STR"))) {
             string lhs = matches[1];
             string val = matches[2];
-            stkFile << "    sconst \"" << val << "\"\n"; // Push string reference
-            stkFile << "    sstore " << lhs << "\n";      // Store reference in variable 's'
+            stkFile << "    sconst \"" << val << "\"\n"; 
+            
+            if (varIndex.find(lhs) == varIndex.end()) {
+                 varIndex[lhs] = nextVarIndex++;
+            }
+            stkFile << "    sstore " << varIndex[lhs] << "\n";       
             continue;
         }
 
         // --- Conditional jump (jnz/jmp) ---
-        // if : GOTO #L1 else GOTO #L2
         if (line.find("if : GOTO") != string::npos) {
             size_t firstGoto = line.find("GOTO") + 5;
             size_t elsePos = line.find("else GOTO");
@@ -182,7 +222,6 @@ int main() {
         }
 
         // --- Param (String) ---
-        // param "Numbers are: " string
         if (line.find("param \"") != string::npos) {
             size_t first = line.find("\"");
             size_t last = line.find_last_of("\"");
@@ -192,22 +231,25 @@ int main() {
         }
         
         // --- Param (Variable) ---
-        // param number INT (Push variable value as argument)
         if (regex_match(line, matches, regex("param ([a-zA-Z_][a-zA-Z0-9_]*) INT"))) {
-            stkFile << "    iload " << matches[1] << "\n"; 
+            stkFile << "    iload " << varIndex[matches[1]] << "\n"; 
             continue;
         }
         
         // --- Param (Temporary) ---
-        // param @t5 INT (Value is already on the stack)
-        if (regex_match(line, regex("param @t[0-9]+ INT"))) {
+        if (regex_match(line, matches, regex("param (@t[0-9]+) INT"))) {
+            string temp_name = matches[1]; 
+
+            if (tempValues.count(temp_name)) {
+                stkFile << "    iconst " << tempValues[temp_name] << "\n";
+            } else {
+                // Value is already on the stack. Do nothing.
+            }
             continue;
         }
 
         // --- Function/Output Call (invoke) ---
-        // @t1 = @call func void 2 OR @t0 = @call output VOID 1
-        // Assumes arguments have already been pushed via 'param' instructions
-        if (regex_match(line, matches, regex("(@t[0-9]+)? = @call ([a-zA-Z_][a-zA-Z0-9_]*) (INT|void) ([0-9]+)"))) {
+        if (regex_match(line, matches, regex("(@t[0-9]+)? = @call ([a-zA-Z_][a-zA-Z0-9_]*) (INT|void|VOID) ([0-9]+)"))) {
             string func_name = matches[2];
             string arg_count = matches[4];
             
@@ -216,7 +258,6 @@ int main() {
         }
 
         // --- Unconditional jump (jmp) ---
-        // GOTO #L3
         if (line.find("GOTO #L") != string::npos) {
             string label = trim(line.substr(line.find("GOTO") + 5));
             stkFile << "    jmp " << label << "\n";
@@ -229,21 +270,17 @@ int main() {
             string val_ref = trim(line.substr(pos + 6));
             val_ref = trim(val_ref.substr(0, val_ref.find("INT")));
 
-            // UPDATED: Check if the return value is a known constant temporary
             if (tempValues.count(val_ref)) {
-                // Case 1: Returning a constant (e.g., return @t1 where @t1=0)
                 stkFile << "    iconst " << tempValues[val_ref] << "\n";
             } else {
-                // Case 2: Returning a computed value (e.g., return @t0 where @t0=a+b)
-                // The value is already on the stack from the previous 'iadd' or 'invoke'.
-                // Do nothing.
+                // Value is already on the stack. Do nothing.
             }
             stkFile << "    ret\n";
             continue;
         }
 
-        // --- Skip declarations (INT, arg INT, STR) and end tag ---
-        if (regex_match(line, regex("- (INT|arg INT|STR) [a-zA-Z_][a-zA-Z0-9_]*(\\[ [0-9]+ \\])?")) || line == "end:") {
+        // --- Skip end tag ---
+        if (line == "end:") {
             continue; 
         }
 
@@ -254,6 +291,9 @@ int main() {
     tacFile.close();
     stkFile.close();
 
-    cout << "✅ STKASM code generator completed. Output written to 'output.stkasm'.\n";
+    cout << "✅ STKASM code generator updated successfully.\n";
     return 0;
 }
+
+
+// Arrays proper

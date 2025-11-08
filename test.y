@@ -301,13 +301,6 @@ declaration     :       data_type ID SCOL {
                             tac.push_back("- " + string($1.type) + " " + string($2.lexeme));
                             func_table[curr_func_name].symbol_table[string($2.lexeme)] = { string($1.type), scope_counter, 0, 0, countn+1 };
                         }
-                        |   STRING ID ASSIGN STR SCOL {
-                                is_reserved_word(string($2.lexeme));
-                                multiple_declaration(string($2.lexeme));
-                                tac.push_back("- STR " + string($2.lexeme));
-                                tac.push_back(string($2.lexeme) + " = " + string($4.lexeme) + " STR");
-                                func_table[curr_func_name].symbol_table[string($2.lexeme)] = { "STR", scope_counter, string($4.lexeme).length(), 0, countn+1 };
-                            }
                         |   data_type ID ASSIGN expr SCOL {
                                 is_reserved_word(string($2.lexeme));
                                 // multiple_declaration(string($2.lexeme));
@@ -363,6 +356,7 @@ data_type       :       INT { strcpy($$.type, "INT"); }
                         |   CHAR { strcpy($$.type, "CHAR"); }
                         |   FLOAT { strcpy($$.type, "FLOAT"); }
                         |   BOOL { strcpy($$.type, "BOOL"); }
+                        |   STRING { strcpy($$.type, "STRING"); }
                         ;
 
 expr            :       expr ADD expr { 
@@ -805,6 +799,10 @@ const           :       INT_NUM {
                             strcpy($$.type, "CHAR");
                             strcpy($$.lexeme, $1.lexeme);
                         }
+                        | STR {
+                            strcpy($$.type, "STR");
+                            strcpy($$.lexeme, $1.lexeme);
+                        }
                         ;
 
 assign          :       ID ASSIGN expr {
@@ -1061,11 +1059,6 @@ arg_list        :       arg COMMA arg_list {
 
 arg             :       expr {
                             tac.push_back("param " + string($1.lexeme) + " " + string($1.type));
-                        }
-                        | STR {
-                            tac.push_back("param " + string($1.lexeme) + " string");
-                            strcpy($$.type, "string");
-                            strcpy($$.lexeme, $1.lexeme);
                         }
                         ;
 

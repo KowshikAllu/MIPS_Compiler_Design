@@ -1,6 +1,6 @@
 import "io.kik";
 
-int add(int a, int b) {
+int add(string str, int a, int b) {
     int result = 20;
     a = a + b;
     int c = 2;
@@ -9,6 +9,7 @@ int add(int a, int b) {
 
 int main() {
     int result = 5;
-    int c = add(result, 10);
+    string str = "akash";
+    int c = add(str, result, 10);
     return 0;
 }
