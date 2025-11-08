@@ -1,33 +1,23 @@
-# Auto-generated .stkasm from TAC
-.text
+✅ STKASM code generator updated successfully.
+al display
+display:
+    invoke output 1
+    invoke output 1
+    iload 0
+    invoke output 1
+    invoke output 1
 
-.global add
-add:
-    iconst 20
-    istore result
-    iload a
-    iload b
-    iadd
-    istore a
-    iconst 2
-    istore c
-    iload a
-    iload b
-    iadd
-    iload @t2
-    iload c
-    iadd
-    iload @t3
-    iload result
-    iadd
-    ret
+.global showDetails
+showDetails:
+    invoke display 0
+    invoke output 1
+    iload 0
+    invoke output 1
 
 .global main
 main:
+    iconst 101
     iconst 5
-    istore result
-    iload result
-    invoke add 2
-    istore c
+    invoke showDetails 0
     iconst 0
     ret

@@ -1,10 +1,51 @@
-// Simple Class Definition
-setMarks: void
-- arg FLOAT m
-marks = m FLOAT
+- arg STRING n
+- arg INT i
+- arg FLOAT s
+name = n STRING
+id = i INT
+salary = s FLOAT
+display: void
+@t0 = "Employee:" STR
+param @t0 STR
+@t1 = @call output VOID 1
+param name STRING
+@t2 = @call output VOID 1
+param id INT
+@t3 = @call output VOID 1
+param salary FLOAT
+@t4 = @call output VOID 1
 end:
 
-getMarks: FLOAT
-return marks FLOAT
+- arg STRING n
+- arg INT i
+- arg FLOAT s
+- arg INT t
+name = n STRING
+id = i INT
+salary = s FLOAT
+teamSize = t INT
+showDetails: void
+@t5 = @call display void 0
+@t6 = "Team Size:" STR
+param @t6 STR
+@t7 = @call output VOID 1
+param teamSize INT
+@t8 = @call output VOID 1
+end:
+
+main: INT
+@t9 = "Akash" STR
+param @t9 STR
+@t10 = 101 INT
+param @t10 INT
+@t11 = 55000.5 FLOAT
+param @t11 FLOAT
+@t12 = 5 INT
+param @t12 INT
+- Manager m
+m = new Manager
+@t13 = @call showDetails void 0
+@t14 = 0 INT
+return @t14 INT
 end:
 

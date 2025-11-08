@@ -1,34 +1,82 @@
 ================================= CLASS TABLE =================================
 
-Class: Student
+Class: Manager    (Parent: Employee)
 
 Members:
 ------------------------------------------------------------------------------------------
 Member                   Type        Visibility  Scope   Array?  Size    Line      
 ------------------------------------------------------------------------------------------
-marks                    FLOAT       private     0       No      4       9         
-grade                    CHAR        public      0       No      1       6         
-id                       INT         public      0       No      4       5         
+teamSize                 INT         private     0       No      4       26        
+
+Inherited Members:
+------------------------------------------------------------------------------------------
+Member                   Type        Visibility  Scope   Array?  Size    Line      
+------------------------------------------------------------------------------------------
+salary (from Employee)   FLOAT       private     0       No      4       7         
+id (from Employee)       INT         private     0       No      4       6         
+name (from Employee)     STRING      private     0       No      20      5         
+
+Methods (summary):
+------------------------------------------------------------------------------------------
+Method                        Return Type    Visibility  #Params Param Types
+------------------------------------------------------------------------------------------
+showDetails                   void           public      0       
+Manager                       void           public      4       STRING, INT, FLOAT, INT
+
+Method: showDetails  (Return: void, Params: 0, Visibility: public)
+------------------------------------------------------------------------------------------
+Variable       Type      Scope   Array?  Size      Line      
+------------------------------------------------------------------------------------------
+(no local symbols)
+
+Method: Manager  (Return: void, Params: 4, Visibility: public)
+------------------------------------------------------------------------------------------
+Variable       Type      Scope   Array?  Size      Line      
+------------------------------------------------------------------------------------------
+t              INT       1       No      4         29        
+s              FLOAT     1       No      4         29        
+i              INT       1       No      4         29        
+n              STRING    1       No      20        29        
+
+Inherited Methods:
+------------------------------------------------------------------------------------------
+Method                        Return Type    Visibility  #Params Param Types
+------------------------------------------------------------------------------------------
+display (from Employee)       void           public      0       
+Employee (from Employee)      void           public      3       STRING, INT, FLOAT
+==========================================================================================
+
+Class: Employee
+
+Members:
+------------------------------------------------------------------------------------------
+Member                   Type        Visibility  Scope   Array?  Size    Line      
+------------------------------------------------------------------------------------------
+salary                   FLOAT       private     0       No      4       7         
+id                       INT         private     0       No      4       6         
+name                     STRING      private     0       No      20      5         
 
 
 Methods (summary):
 ------------------------------------------------------------------------------------------
 Method                        Return Type    Visibility  #Params Param Types
 ------------------------------------------------------------------------------------------
-getMarks                      FLOAT          public      0       
-setMarks                      void           public      1       FLOAT
+display                       void           public      0       
+Employee                      void           public      3       STRING, INT, FLOAT
 
-Method: getMarks  (Return: FLOAT, Params: 0, Visibility: public)
+Method: display  (Return: void, Params: 0, Visibility: public)
 ------------------------------------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------------------------------------
 (no local symbols)
 
-Method: setMarks  (Return: void, Params: 1, Visibility: public)
+Method: Employee  (Return: void, Params: 3, Visibility: public)
 ------------------------------------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------------------------------------
-m              FLOAT     1       No      4         12        
+s              FLOAT     1       No      4         10        
+i              INT       1       No      4         10        
+n              STRING    1       No      20        10        
 
 ==========================================================================================
 
