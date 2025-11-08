@@ -1,0 +1,47 @@
+import "io.kik";
+
+class Employee {
+    private:
+        string name;
+        int id;
+        float salary;
+
+    public:
+        Employee(string n, int i, float s) {
+            name = n;
+            id = i;
+            salary = s;
+        }
+
+        void display() {
+            output("Employee:");
+            output(name);
+            output(id);
+            output(salary);
+        }
+}
+
+class Manager : Employee {
+    private:
+        int teamSize;
+
+    public:
+        Manager(string n, int i, float s, int t) {
+            name = n;
+            id = i;
+            salary = s;
+            teamSize = t;
+        }
+
+        void showDetails() {
+            display();
+            output("Team Size:");
+            output(teamSize);
+        }
+}
+
+int main() {
+    Manager m = new Manager("Akash", 101, 55000.5, 5);
+    m.showDetails();
+    return 0;
+}

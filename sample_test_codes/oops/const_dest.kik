@@ -1,0 +1,24 @@
+// Class with Constructor and Destructor
+
+import "io.kik";
+
+class Box {
+    public:
+        int length;
+        int breadth;
+        int height;
+
+        Box(int l, int b, int h) {
+            length = l;
+            breadth = b;
+            height = h;
+        }
+
+        ~Box() {
+            output("Box destroyed");
+        }
+
+        int volume() {
+            return length * breadth * height;
+        }
+}

@@ -1,0 +1,41 @@
+// Multiple Classes with Objects
+
+import "io.kik";
+
+class Car {
+    public:
+        string model;
+        int speed;
+
+        void accelerate() {
+            speed = speed + 10;
+        }
+
+        void display() {
+            output(model);
+            output(speed);
+        }
+}
+
+class Garage {
+    public:
+        Car c;
+
+        void setup() {
+            c = new Car();
+            c.model = "Tesla";
+            c.speed = 50;
+        }
+
+        void testDrive() {
+            c.accelerate();
+            c.display();
+        }
+}
+
+int main() {
+    Garage g = new Garage();
+    g.setup();
+    g.testDrive();
+    return 0;
+}

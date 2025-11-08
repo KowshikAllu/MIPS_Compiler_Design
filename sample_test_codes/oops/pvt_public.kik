@@ -1,0 +1,29 @@
+// Class with Private Data and Public Accessors
+
+import "io.kik";
+
+class Account {
+    private:
+        int balance;
+
+    public:
+        Account(int initial) {
+            balance = initial;
+        }
+
+        void deposit(int amt) {
+            balance = balance + amt;
+        }
+
+        int getBalance() {
+            return balance;
+        }
+}
+
+void main() {
+    Account acc = new Account(1000);
+    Account acc;
+    acc.deposit(500);
+    int total = acc.getBalance();
+    output(total);
+}

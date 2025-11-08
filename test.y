@@ -41,27 +41,33 @@
     int yywrap();
     int yytext();
 
-    bool check_declaration(string variable);
-    bool check_scope(string variable);
     bool multiple_declaration(string variable);
     bool is_reserved_word(string id);
     bool function_check(string variable, int flag);
     bool type_check(string type1, string type2);
     bool check_type(string l, string r);
     string get_temp();
+    int get_type_size(const string &dtype);
 
     queue<string> free_temp;
     set<string> const_temps;
     void PrintStack(stack<int> s);
-    void print_symbol_table();
+    void print_func_table();
 
     struct var_info {
         string data_type;
         int scope;
         int size;   // for arrays
         int isArray;
-        int line_number; 
+        int line_number;
+        string visibility = "private";
     };
+
+    bool lookup_var_info(const string& name, var_info*& out_info);
+    bool check_decl_any(const string& variable);
+    bool check_scope_any(const string& variable);
+    bool get_id_type(const string& id, string& out_type);
+    void print_class_table();
 
     set<string> valid_libs = {"\"io.kik\"", "\"string.kik\"", "\"math.kik\"", "\"io.kik\""};
     set<string> imported_libs;
@@ -87,11 +93,12 @@
 
     extern int countn;
 
-    struct func_info{
+    struct func_info {
         string return_type;
         int num_params;
         vector<string> param_types;
         unordered_map<string, struct var_info> symbol_table;
+        string visibility = "private";
     };
 
     int has_return_stmt;
@@ -99,6 +106,17 @@
     unordered_map<string, struct func_info> func_table;
     string curr_func_name;
     vector<string> curr_func_param_type;
+
+    struct class_info {
+        string parent;
+        unordered_map<string, var_info> members;
+        unordered_map<string, func_info> methods;
+    };
+
+    unordered_map<string, struct class_info> class_table;
+    string curr_class_name;
+    bool in_method = false;
+    string current_visibility = "private";
 
     vector<string> reserved = {"import", "int", "float", "char", "bool", "string", "void", "if", "else", "for", "while", "break", "continue", "kik", "return", "switch", "case", "input", "output"};
 
@@ -121,9 +139,9 @@
     } node;
 }
 
-%token <node> IMPORT INT CHAR FLOAT BOOL STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STR CHARACTER CC OC CS OS CF OF COMMA COLON SCOL SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE
+%token <node> IMPORT INT CHAR FLOAT BOOL STRING VOID RETURN INT_NUM FLOAT_NUM ID LEFTSHIFT RIGHTSHIFT LE GE EQ NE GT LT AND OR NOT ADD SUBTRACT DIVIDE MULTIPLY MODULO BITAND BITOR NEGATION XOR STRING_LITERAL CHARACTER CC OC CS OS CF OF COMMA COLON SCOL SWITCH CASE BREAK DEFAULT IF ELIF ELSE WHILE FOR CONTINUE CLASS PUBLIC PRIVATE PROTECTED NEW DOT
 
-%type <node> Program import_list import_stmt func func_list func_prefix param_list param stmt_list stmt declaration return_stmt data_type func_data_type expr primary_expr unary_expr unary_op const assign if_stmt elif_stmt else_stmt switch_stmt case_stmt case_stmt_list while_loop_stmt for_loop_stmt postfix_expr func_call arg_list arg
+%type <node> program import_stmt class_def inheritance_opt class_body access_specifier_block_list access_specifier_block access_specifier class_members class_member constructor_def destructor_def object_creation member_access class_list func func_prefix param_list param stmt_list stmt declaration return_stmt data_type expr primary_expr unary_expr unary_op const assign if_stmt elif_stmt else_stmt switch_stmt case_stmt case_stmt_list while_loop_stmt for_loop_stmt postfix_expr func_call arg_list arg
 
 %right ASSIGN
 %left OR
@@ -140,14 +158,216 @@
 
 %%
 
-Program         :       import_list func_list
+program         :       top_level_list
                         ;
 
-import_list     :       import_list import_stmt
+top_level_list  :       top_level_list top_level_stmt
+                        | 
+                        ;
+
+top_level_stmt  :       import_stmt
+                        | func
+                        | class_def
+                        ;
+
+class_list      :       class_list class_def
+                        | class_def
+                        ;
+
+class_def       :       CLASS ID {
+                            curr_class_name = string($2.lexeme);
+                            curr_func_name = "";
+                            in_method = false; 
+                            if (class_table.find(curr_class_name) != class_table.end()) {
+                                sem_errors.push_back("Duplicate class definition: " + curr_class_name);
+                            } else {
+                                class_table[curr_class_name] = class_info();
+                            }
+                        } inheritance_opt OF class_body CF {
+                            curr_class_name = "";
+                            curr_func_name = "";
+                            in_method = false;
+                        }
+                        ;
+
+inheritance_opt :       COLON ID {
+                            string parent_name = string($2.lexeme);
+                            if (class_table.find(parent_name) == class_table.end()) {
+                                sem_errors.push_back("Parent class '" + parent_name + "' not defined before inheritance.");
+                            } else {
+                                class_table[curr_class_name].parent = parent_name;
+                            }
+                        }
                         |
                         ;
 
-import_stmt     :       IMPORT STR SCOL {
+
+class_body      :       access_specifier_block_list
+                        |
+                        ;
+
+access_specifier_block_list :   access_specifier_block access_specifier_block_list
+                                | access_specifier_block
+                                ;
+
+access_specifier_block      :   access_specifier COLON {
+                                    current_visibility = string($1.lexeme);
+                                } class_members
+                                ;
+
+access_specifier:       PUBLIC
+                        | PRIVATE
+                        | PROTECTED
+                        ;
+
+class_members   :       class_member class_members
+                        | class_member
+                        ;
+
+class_member    :       declaration
+                        | func {
+                            if (!curr_class_name.empty()) {
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
+                        }
+                        | constructor_def {
+                            // Register constructor under class
+                            if (!curr_class_name.empty()) {
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
+                        }
+                        | destructor_def {
+                            // Register destructor under class
+                            if (!curr_class_name.empty()) {
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
+                        }
+                        | object_creation
+                        ;
+
+constructor_def :       ID OC {
+                            in_method = true;
+                            curr_func_name = string($1.lexeme);
+
+                            if (curr_class_name.empty()) {
+                                sem_errors.push_back("Constructor '" + curr_func_name +
+                                                    "' defined outside class context.");
+                            } else if (curr_class_name != curr_func_name) {
+                                sem_errors.push_back("Constructor '" + curr_func_name +
+                                                    "' must match class name '" + curr_class_name + "'");
+                            }
+
+                            // (Re)initialize func_table entry for this constructor
+                            func_table[curr_func_name].return_type = "void";   // constructors return void
+                            func_table[curr_func_name].num_params  = 0;
+                            func_table[curr_func_name].param_types.clear();
+                            func_table[curr_func_name].symbol_table.clear();
+                            func_table[curr_func_name].visibility  = current_visibility;
+                        } param_list CC OF {
+                            func_table[curr_func_name].num_params = $4.nParams;
+                            scope_history.push(++scope_counter);
+                        } stmt_list CF {
+                            scope_history.pop();
+                            --scope_counter;
+
+                            if (!curr_class_name.empty()) {
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
+                            in_method = false;
+                        }
+                        ;
+
+
+destructor_def  :       NEGATION ID OC CC OF {
+                            in_method = true;
+                            curr_func_name = "~" + string($2.lexeme);
+
+                            if (curr_class_name.empty() || curr_class_name != string($2.lexeme)) {
+                                sem_errors.push_back("Destructor name must match class name '" + curr_class_name + "'");
+                            }
+
+                            func_table[curr_func_name].return_type = "void";
+                            func_table[curr_func_name].num_params = 0;
+                            func_table[curr_func_name].param_types.clear();
+                            func_table[curr_func_name].symbol_table.clear();
+                            func_table[curr_func_name].visibility  = current_visibility;
+
+                            scope_history.push(++scope_counter);
+                        } stmt_list CF {
+                            scope_history.pop();
+                            --scope_counter;
+
+                            if (!curr_class_name.empty())
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+
+                            in_method = false;
+                        }
+                        ;
+
+/* #--------------------------
+# Object creation & access
+#-------------------------- */
+
+object_creation :       ID ID ASSIGN NEW ID OC arg_list CC SCOL {
+                            string classType = string($1.lexeme);
+                            string objName = string($2.lexeme);
+                            string newType = string($5.lexeme);
+
+                            if (class_table.find(classType) == class_table.end()) {
+                                sem_errors.push_back("Undefined class type '" + classType +
+                                                    "' at line " + to_string(countn+1));
+                            }
+                            if (class_table.find(newType) == class_table.end()) {
+                                sem_errors.push_back("Undefined class type '" + newType +
+                                                    "' at line " + to_string(countn+1));
+                            }
+
+                            if (classType != newType) {
+                                sem_errors.push_back("Type mismatch: cannot assign object of class '" + newType +
+                                                    "' to variable of class '" + classType + "' at line " + to_string(countn+1));
+                            }
+
+                            if (!curr_class_name.empty() && !in_method) {
+                                // inside a class as member
+                                class_table[curr_class_name].members[objName] =
+                                    { classType, scope_counter, 0, 0, countn+1 };
+                            } else {
+                                // inside function or globally
+                                func_table[curr_func_name].symbol_table[objName] =
+                                    { classType, scope_counter, 0, 0, countn+1 };
+                            }
+
+                            tac.push_back("- " + classType + " " + objName);
+                            tac.push_back(objName + " = new " + newType);
+                        }
+                        | ID ID SCOL {
+                            string classType = string($1.lexeme);
+                            string objName = string($2.lexeme);
+
+                            if (class_table.find(classType) == class_table.end()) {
+                                sem_errors.push_back("Undefined class type '" + classType + "' for object '" + objName +
+                                                    "' at line " + to_string(countn+1));
+                            }
+
+                            if (!curr_class_name.empty() && !in_method) {
+                                // inside class
+                                class_table[curr_class_name].members[objName] =
+                                    { classType, scope_counter, 0, 0, countn+1 };
+                            } else {
+                                // inside function
+                                func_table[curr_func_name].symbol_table[objName] =
+                                    { classType, scope_counter, 0, 0, countn+1 };
+                            }
+
+                            tac.push_back("- " + classType + " " + objName);
+                        }
+                        ;
+
+member_access   :       ID DOT ID
+                        | ID DOT func_call
+                        ;
+
+import_stmt     :       IMPORT STRING_LITERAL SCOL {
                             string lib = string($2.lexeme);
                             if(valid_libs.find(lib) == valid_libs.end()){
                                 sem_errors.push_back("Library " + lib + " not found at line " + to_string(countn+1));
@@ -187,12 +407,9 @@ import_stmt     :       IMPORT STR SCOL {
                         }
                         ;
 
-func_list       :       func_list func {}
-                        |
-                        ;
-
 func            :       func_prefix OF {
                             has_return_stmt = 0;
+                            if (!curr_class_name.empty()) in_method = true;
                             scope_history.push(++scope_counter);
                         } stmt_list CF {
                             if(func_table[curr_func_name].return_type != "void" && has_return_stmt == 0){
@@ -202,38 +419,112 @@ func            :       func_prefix OF {
                             --scope_counter;
                             tac.push_back("end:\n");
                             has_return_stmt = 0;
+                            in_method = false;
                         }
 
-func_prefix     :       func_data_type ID {
-                            if(func_table.find(string($2.lexeme)) != func_table.end()){
-                                sem_errors.push_back("Error: Duplicate function name - " + string($2.lexeme));
+func_prefix     :       data_type ID {
+                            string funcName = string($2.lexeme);
+
+                            // Allow same function name in different classes
+                            if (curr_class_name.empty()) {
+                                // Global function (must be unique)
+                                if (func_table.find(funcName) != func_table.end()) {
+                                    sem_errors.push_back("Error: Duplicate function name - " + funcName);
+                                }
+                            } else {
+                                // Class method (check for override)
+                                auto &cls = class_table[curr_class_name];
+                                string parent = cls.parent;
+
+                                bool isOverride = false;
+
+                                // Check if parent defines this method
+                                while (!parent.empty()) {
+                                    if (class_table[parent].methods.find(funcName) != class_table[parent].methods.end()) {
+                                        isOverride = true;
+                                        break;
+                                    }
+                                    parent = class_table[parent].parent;
+                                }
+
+                                if (isOverride) {
+                                    // Optionally note override (don’t raise error)
+                                    tac.push_back("# " + funcName + " overrides parent method");
+                                } else if (cls.methods.find(funcName) != cls.methods.end()) {
+                                    sem_errors.push_back("Duplicate method '" + funcName +
+                                                        "' in class '" + curr_class_name + "'");
+                                }
                             }
-                            tac.push_back(string($2.lexeme) + ": " + string($1.type)); 
-                            curr_func_name = string($2.lexeme);
+
+                            // Record TAC label
+                            tac.push_back(funcName + ": " + string($1.type));
+                            curr_func_name = funcName;
                         } OC param_list CC {
                             func_table[curr_func_name].return_type = string($1.type);
-                            func_table[curr_func_name].num_params = $5.nParams;
-                        }
+                            func_table[curr_func_name].num_params  = $5.nParams;
 
-func_data_type  :       data_type {
-                            strcpy($$.type, $1.type);
+                            // Store method properly inside class if inside one
+                            if (!curr_class_name.empty()) {
+                                func_table[curr_func_name].visibility = current_visibility;
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
                         }
-                        | VOID {
-                            sprintf($$.type, "void");
+                        | VOID ID {
+                            string funcName = string($2.lexeme);
+
+                            // Global uniqueness check
+                            if (curr_class_name.empty()) {
+                                if (func_table.find(funcName) != func_table.end()) {
+                                    sem_errors.push_back("Error: Duplicate function name - " + funcName);
+                                }
+                            } else {
+                                // Class method override check
+                                auto &cls = class_table[curr_class_name];
+                                string parent = cls.parent;
+                                bool isOverride = false;
+
+                                while (!parent.empty()) {
+                                    if (class_table[parent].methods.find(funcName) != class_table[parent].methods.end()) {
+                                        isOverride = true;
+                                        break;
+                                    }
+                                    parent = class_table[parent].parent;
+                                }
+
+                                if (isOverride) {
+                                    tac.push_back("# " + funcName + " overrides parent method");
+                                } else if (cls.methods.find(funcName) != cls.methods.end()) {
+                                    sem_errors.push_back("Duplicate method '" + funcName +
+                                                        "' in class '" + curr_class_name + "'");
+                                }
+                            }
+
+                            tac.push_back(funcName + ": void");
+                            curr_func_name = funcName;
+                            func_table[curr_func_name].visibility = current_visibility;
+                        } OC param_list CC {
+                            func_table[curr_func_name].return_type = "void";
+                            func_table[curr_func_name].num_params  = $5.nParams;
+
+                            if (!curr_class_name.empty()) {
+                                class_table[curr_class_name].methods[curr_func_name] = func_table[curr_func_name];
+                            }
                         }
                         ;
  
 param_list      :       param {
+                            int typeSize = get_type_size(string($1.type));
                             func_table[curr_func_name].param_types.push_back(string($1.type));
-                            func_table[curr_func_name].symbol_table[string($1.lexeme)] = { string($1.type), scope_counter+1, 0, 0, countn+1 };
+                            func_table[curr_func_name].symbol_table[string($1.lexeme)] = { string($1.type), scope_counter+1, typeSize, 0, countn+1 };
                             tac.push_back("- arg " + string($1.type) + " " + string($1.lexeme));                       
                         } COMMA param_list {
                             $$.nParams = $4.nParams + 1;
                         }
                         | param {
                             $$.nParams = 1;
+                            int typeSize = get_type_size(string($1.type));
                             func_table[curr_func_name].param_types.push_back(string($1.type));
-                            func_table[curr_func_name].symbol_table[string($1.lexeme)] = { string($1.type), scope_counter+1, 0, 0, countn+1 };
+                            func_table[curr_func_name].symbol_table[string($1.lexeme)] = { string($1.type), scope_counter+1, typeSize, 0, countn+1 };
                             tac.push_back("- arg " + string($1.type) + " " + string($1.lexeme));
                         }
                         | {
@@ -244,7 +535,7 @@ param_list      :       param {
 param           :       data_type ID {
                             $$.nParams = 1;
                             strcpy($$.type, $1.type);
-                            strcpy($$.lexeme, $2.lexeme);                    
+                            strcpy($$.lexeme, $2.lexeme); 
                         }
                         ;
 
@@ -270,61 +561,81 @@ stmt            :       declaration
                                 }
                             }
                         |   switch_stmt
-                        /* |   INPUT OC ID CC SCOL {
-                                check_declaration($3.lexeme);
-                                tac.push_back("input " + string($3.lexeme) + " " + func_table[curr_func_name].symbol_table[string($3.lexeme)].data_type);
-                                // check_scope(string($3.lexeme));
-                            }
-                        |   INPUT OC ID OS expr CS CC SCOL {
-                                check_declaration($3.lexeme);
-                                string temp = get_temp();
-                                tac.push_back("input " + temp + " " + func_table[curr_func_name].symbol_table[string($3.lexeme)].data_type);
-                                tac.push_back(string($3.lexeme) + " [ " + string($5.lexeme) + " ] = " + temp + " " + func_table[curr_func_name].symbol_table[string($3.lexeme)].data_type);
-                                free_temp.push(temp);
-                                // check_scope(string($3.lexeme));
-                            }
-                        |   OUTPUT OC expr CC SCOL {
-                                cout << "output expr" << endl;
-                                tac.push_back("output " + string($3.lexeme) + " " + string($3.type));
-                            }
-                        |   OUTPUT OC STR CC SCOL {
-                                cout << "output expr2" << endl;
-                                tac.push_back("output " + string($3.lexeme) + " STR");
-                            }
-                        ; */
+                        |   object_creation
+                        ;
 
-declaration     :       data_type ID SCOL { 
-                            is_reserved_word(string($2.lexeme));
-                            // if(multiple_declaration(string($2.lexeme))){
-                                // check_scope(string($2.lexeme));
-                            // };
-                            tac.push_back("- " + string($1.type) + " " + string($2.lexeme));
-                            func_table[curr_func_name].symbol_table[string($2.lexeme)] = { string($1.type), scope_counter, 0, 0, countn+1 };
+declaration     :       data_type ID SCOL {
+                            string id = string($2.lexeme);
+                            string dtype = string($1.type);
+                            int typeSize = get_type_size(dtype);
+
+                            if (!is_reserved_word(id) && !multiple_declaration(id)) {           // is this req??, comment it out???????
+                                if (!curr_class_name.empty() && !in_method) {
+                                    class_table[curr_class_name].members[id] = { dtype, scope_counter, typeSize, 0, countn+1, current_visibility };
+                                } else {
+                                    tac.push_back("- " + dtype + " " + id);
+                                    func_table[curr_func_name].symbol_table[id] = { dtype, scope_counter, typeSize, 0, countn+1 };
+                                }
+                            }
                         }
                         |   data_type ID ASSIGN expr SCOL {
-                                is_reserved_word(string($2.lexeme));
-                                // multiple_declaration(string($2.lexeme));
-                                check_type(string($1.type), string($4.type));
-                                tac.push_back("- " + string($1.type) + " " + string($2.lexeme));
-                                tac.push_back(string($2.lexeme) + " = " + string($4.lexeme) + " " + string($1.type));
-                                func_table[curr_func_name].symbol_table[string($2.lexeme)] = { string($1.type), scope_counter, 0, 0, countn+1 };
+                                string id = string($2.lexeme);
+                                string dtype = string($1.type);
+                                int typeSize = get_type_size(dtype);
 
-                                if(const_temps.find(string($4.lexeme)) == const_temps.end() && $4.lexeme[0] == '@') free_temp.push(string($4.lexeme));
+                                if (!is_reserved_word(id) && !multiple_declaration(id)) {       // COMMENT???? mult_decl
+                                    check_type(dtype, string($4.type));
+
+                                    if (!curr_class_name.empty() && !in_method) {
+                                        class_table[curr_class_name].members[id] = { dtype, scope_counter, typeSize, 0, countn+1, current_visibility };
+                                    } else {
+                                        tac.push_back("- " + dtype + " " + id);
+                                        tac.push_back(id + " = " + string($4.lexeme) + " " + dtype);
+                                        func_table[curr_func_name].symbol_table[id] = { dtype, scope_counter, typeSize, 0, countn+1 };
+
+                                        /* manage temps: if right-hand is a temp (starts with '@') and is not a const temp, release it */
+                                        if (!string($4.lexeme).empty() && string($4.lexeme)[0] == '@' && const_temps.find(string($4.lexeme)) == const_temps.end()) {
+                                            free_temp.push(string($4.lexeme));
+                                        }
+                                    }
+                                }
                             }
                         |   data_type ID OS INT_NUM CS SCOL {
-                                is_reserved_word(string($2.lexeme));
-                                multiple_declaration(string($2.lexeme));
-                                tac.push_back("- " + string($1.type) + " " + string($2.lexeme) + " [ " + string($4.lexeme) + " ] ");
-                                func_table[curr_func_name].symbol_table[string($2.lexeme)] = { string($1.type), scope_counter, stoi(string($4.lexeme)), 1, countn+1 };
+                                string id = string($2.lexeme);
+                                string dtype = string($1.type);
+                                int arr_size = 0;
+                                int typeSize = get_type_size(dtype);
+                                try { arr_size = stoi(string($4.lexeme)); } catch(...) { arr_size = 0; }
+
+                                if (!is_reserved_word(id) && !multiple_declaration(id)) {
+                                    if (!curr_class_name.empty() && !in_method) {
+                                        class_table[curr_class_name].members[id] = { dtype, scope_counter, arr_size, 1, countn+1, current_visibility };
+                                    } else {
+                                        tac.push_back("- " + dtype + " " + id + " [ " + to_string(arr_size) + " ] ");
+                                        func_table[curr_func_name].symbol_table[id] = { dtype, scope_counter, arr_size, 1, countn+1 };
+                                    }
+                                }
                             }
-                        |   data_type ID OS INT_NUM CS ASSIGN {
-                                is_reserved_word(string($2.lexeme));
-                                multiple_declaration(string($2.lexeme));
-                                tac.push_back("- " + string($1.type) + " " + string($2.lexeme) + " [ " + string($4.lexeme) + " ] ");
-                                func_table[curr_func_name].symbol_table[string($2.lexeme)] = { string($1.type), scope_counter, stoi(string($4.lexeme)), 1, countn+1 };
-                                curr_array = string($2.lexeme);
-                            } OF arr_values CF SCOL // array size must be a positive integer 
-                        ;
+                        |   data_type ID OS INT_NUM CS ASSIGN OF arr_values CF SCOL {               // check once???????
+                                string id = string($2.lexeme);
+                                string dtype = string($1.type);
+                                int arr_size = 0;
+                                int typeSize = get_type_size(dtype);
+                                try { arr_size = stoi(string($4.lexeme)); } catch(...) { arr_size = 0; }
+
+                                if (!is_reserved_word(id) && !multiple_declaration(id)) {
+                                    if (!curr_class_name.empty() && !in_method) {
+                                        class_table[curr_class_name].members[id] = { dtype, scope_counter, arr_size, 1, countn+1, current_visibility };
+                                    } else {
+                                        tac.push_back("- " + dtype + " " + id + " [ " + to_string(arr_size) + " ] ");
+                                        func_table[curr_func_name].symbol_table[id] = { dtype, scope_counter, arr_size, 1, countn+1 };
+                                        /* mark current array so arr_values actions can fill it */
+                                        curr_array = id;
+                                    }
+                                    /* you probably also want to process arr_values into memory/tac here or inside arr_values rule */
+                                }
+                            }
+                            ;
 
 arr_values      :       const {
                             check_type(func_table[curr_func_name].symbol_table[curr_array].data_type, string($1.type));
@@ -355,7 +666,6 @@ return_stmt     :       RETURN expr {
 data_type       :       INT { strcpy($$.type, "INT"); }
                         |   CHAR { strcpy($$.type, "CHAR"); }
                         |   FLOAT { strcpy($$.type, "FLOAT"); }
-                        |   BOOL { strcpy($$.type, "BOOL"); }
                         |   STRING { strcpy($$.type, "STRING"); }
                         ;
 
@@ -712,20 +1022,39 @@ expr            :       expr ADD expr {
                                 strcpy($$.type, $1.type);
                                 sprintf($$.lexeme, "%s", $1.lexeme);
                             }
+                        |   NEW ID OC arg_list CC {
+                                // semantic type of `new Class()` is the class name
+                                strcpy($$.type, $2.lexeme);
+                                string t = get_temp();
+                                sprintf($$.lexeme, t.c_str());
+                                tac.push_back(string($$.lexeme) + " = new " + string($2.lexeme));
+                            }
+                        ;
 
 postfix_expr    :       func_call {
                             strcpy($$.type, $1.type);
                             sprintf($$.lexeme, "%s", $1.lexeme);
                         }
                         | ID OS expr CS {
-                            if(check_declaration(string($1.lexeme)) && func_table[curr_func_name].symbol_table[string($1.lexeme)].isArray == 0) { 
-                                sem_errors.push_back("Variable is not an array"); 
+                            // Verify declaration in either local or class member
+                            if (check_decl_any(string($1.lexeme))) {
+                                // Ensure it actually is an array
+                                var_info* info = nullptr;
+                                lookup_var_info(string($1.lexeme), info);
+                                if (info && info->isArray == 0) {
+                                    sem_errors.push_back("Variable is not an array");
+                                }
+                                check_scope_any(string($1.lexeme));
+
+                                // Type comes from the array's element type (same as data_type field)
+                                strcpy($$.type, info ? info->data_type.c_str() : "UNKNOWN");
+                            } else {
+                                strcpy($$.type, "UNKNOWN");
                             }
-                            check_scope(string($1.lexeme));
-                            strcpy($$.type, func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type.c_str());
+
                             sprintf($$.lexeme, get_temp().c_str());
                             tac.push_back(string($$.lexeme) + " = " + string($1.lexeme) + " [ " + string($3.lexeme) + " ] " + string($$.type));
-                            
+
                             if(const_temps.find(string($3.lexeme)) == const_temps.end() && $3.lexeme[0] == '@') free_temp.push(string($3.lexeme));
                         }
                         ;
@@ -748,10 +1077,19 @@ unary_expr      :       unary_op primary_expr {
                         ;
 
 primary_expr    :       ID {
-                            check_declaration(string($1.lexeme));
-                            // check_scope(string($1.lexeme));
-                            strcpy($$.type, func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type.c_str());
-                            strcpy($$.lexeme, $1.lexeme);
+                            var_info* info = nullptr;
+
+                            if (lookup_var_info(string($1.lexeme), info)) {
+                                check_scope_any(string($1.lexeme));
+
+                                strcpy($$.type, info->data_type.c_str());
+                                strcpy($$.lexeme, $1.lexeme);
+                            } 
+                            else {
+                                sem_errors.push_back("Variable not declared in line " + to_string(countn+1) + " before usage.");
+                                strcpy($$.type, "UNKNOWN");
+                                strcpy($$.lexeme, "error");
+                            }
                         }
                         |   const {
                                 strcpy($$.type, $1.type);
@@ -762,22 +1100,14 @@ primary_expr    :       ID {
                                 temp_map[string($1.lexeme)] = string($$.lexeme);
 
                                 const_temps.insert(t);
-                                // if(temp_map[string($1.lexeme)] == ""){
-                                //     string t=get_temp();
-                                //     sprintf($$.lexeme, t.c_str());
-                                //     tac.push_back(string($$.lexeme) + " = " + string($1.lexeme) + " " + string($$.type)); 
-                                //     temp_map[string($1.lexeme)] = string($$.lexeme);
-
-                                //     const_temps.insert(t);
-                                // }
-                                // else{
-                                //     //tac.push_back(temp_map[string($1.lexeme)] + " = " + string($1.lexeme) + " " + string($$.type)); 
-                                //     strcpy($$.lexeme, temp_map[string($1.lexeme)].c_str());
-                                // }
                             }
                         |   OC expr CC {
                                 strcpy($$.type, $2.type);
                                 strcpy($$.lexeme, $2.lexeme);
+                            }
+                        |   member_access {
+                                strcpy($$.type, $1.type);
+                                strcpy($$.lexeme, $1.lexeme);
                             }
                         ;
 
@@ -799,29 +1129,51 @@ const           :       INT_NUM {
                             strcpy($$.type, "CHAR");
                             strcpy($$.lexeme, $1.lexeme);
                         }
-                        | STR {
+                        | STRING_LITERAL {
                             strcpy($$.type, "STR");
                             strcpy($$.lexeme, $1.lexeme);
                         }
                         ;
 
 assign          :       ID ASSIGN expr {
-                            check_type(func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type, string($3.type));
-                            check_declaration(string($1.lexeme));
-                            check_scope(string($1.lexeme));
-                            tac.push_back(string($1.lexeme) + " = " + string($3.lexeme) + " " + func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type);
+                            var_info* info = nullptr;
+                            if (lookup_var_info(string($1.lexeme), info)) {
+                                check_scope_any(string($1.lexeme));
 
-                            if(const_temps.find(string($3.lexeme)) == const_temps.end() && $3.lexeme[0] == '@') free_temp.push(string($3.lexeme));
+                                check_type(info->data_type, string($3.type));
+                                tac.push_back(string($1.lexeme) + " = " + string($3.lexeme) + " " + info->data_type);
+
+                                if (const_temps.find(string($3.lexeme)) == const_temps.end() && $3.lexeme[0] == '@')
+                                    free_temp.push(string($3.lexeme));
+                            } else {
+                                sem_errors.push_back("Variable '" + string($1.lexeme) + "' not declared before assignment at line " + to_string(countn+1));
+                            }
                         }
                         |   ID OS expr CS ASSIGN expr {
-                                check_type(func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type, string($6.type));
-                                if(check_declaration(string($1.lexeme)) && func_table[curr_func_name].symbol_table[string($1.lexeme)].isArray == 0) { 
-                                    sem_errors.push_back("Line no " + to_string(countn+1) + " : Variable is not an array"); 
-                                }
-                                check_scope(string($1.lexeme));
-                                tac.push_back(string($1.lexeme) + " [ " + string($3.lexeme) + " ] = " + string($6.lexeme) + " " + func_table[curr_func_name].symbol_table[string($1.lexeme)].data_type);
+                                var_info* info = nullptr;
+                                if (lookup_var_info(string($1.lexeme), info)) {
+                                    check_scope_any(string($1.lexeme));
 
-                                if(const_temps.find(string($6.lexeme)) == const_temps.end() && $6.lexeme[0] == '@') free_temp.push(string($6.lexeme));
+                                    if (info->isArray == 0) {
+                                        sem_errors.push_back("Line no " + to_string(countn+1) + " : Variable '" + string($1.lexeme) + "' is not an array");
+                                    }
+
+                                    check_type(info->data_type, string($6.type));
+                                    tac.push_back(string($1.lexeme) + " [ " + string($3.lexeme) + " ] = " + string($6.lexeme) + " " + info->data_type);
+
+                                    if (const_temps.find(string($6.lexeme)) == const_temps.end() && $6.lexeme[0] == '@')
+                                        free_temp.push(string($6.lexeme));
+                                } else {
+                                    sem_errors.push_back("Array variable '" + string($1.lexeme) + "' not declared before usage at line " + to_string(countn+1));
+                                }
+                            }
+                        |   member_access ASSIGN expr {
+                                check_type(string($1.type), string($3.type));
+
+                                tac.push_back(string($1.lexeme) + " = " + string($3.lexeme) + " " + string($1.type));
+
+                                if (const_temps.find(string($3.lexeme)) == const_temps.end() && $3.lexeme[0] == '@')
+                                    free_temp.push(string($3.lexeme));
                             }
 
 if_stmt         :       IF {
@@ -1080,42 +1432,26 @@ int main(int argc, char *argv[]) {
     for(auto x: tac) 
         cout << x << endl;
 
-    print_symbol_table();
+    print_func_table();
+    print_class_table();
 
     return 0;
 }
 
-bool check_declaration(string variable) {
-    if(func_table[curr_func_name].symbol_table.find(variable) == func_table[curr_func_name].symbol_table.end()){
-        sem_errors.push_back("Variable not declared in line " + to_string(countn+1) + " before usage.");
-        return false;
-    }
-    return true;
-}
-
-bool check_scope(string variable){
-    int var_scope = func_table[curr_func_name].symbol_table[variable].scope;
-    // int curr_scope = scope_counter;
-    stack<int> temp_stack(scope_history);
-    // cout << "variable: " << variable << endl;
-    // cout << "var_scope: " << var_scope << endl;
-    // PrintStack(temp_stack);
-    // cout << endl;
-    while(!temp_stack.empty()){
-        if(temp_stack.top() == var_scope){
+bool multiple_declaration(string variable) {
+    if (!curr_class_name.empty() && !in_method) {
+        if (class_table[curr_class_name].members.find(variable) != class_table[curr_class_name].members.end()) {
+            sem_errors.push_back("redeclaration of member '" + variable + "' in class '" + curr_class_name + "' at line " + to_string(countn+1));
             return true;
         }
-        temp_stack.pop();
+        return false;
     }
-    sem_errors.push_back("Scope of variable '" + variable +"' not matching in line " + to_string(countn+1) + ".");
-    return true;
-}
 
-bool multiple_declaration(string variable) {
-    if(!(func_table[curr_func_name].symbol_table.find(variable) == func_table[curr_func_name].symbol_table.end())){
+    if (func_table[curr_func_name].symbol_table.find(variable) != func_table[curr_func_name].symbol_table.end()) {
         sem_errors.push_back("redeclaration of '" + variable + "' in line " + to_string(countn+1));
         return true;
     }
+
     return false;
 }
 
@@ -1167,6 +1503,85 @@ string get_temp() {
     return t; 
 }
 
+bool lookup_var_info(const string& name, var_info*& out_info) {
+    auto &locals = func_table[curr_func_name].symbol_table;
+    auto it = locals.find(name);
+    if (it != locals.end()) { out_info = &it->second; return true; }
+
+    if (!curr_class_name.empty() && in_method) {
+        string cls = curr_class_name;
+
+        while (!cls.empty()) {
+            auto &members = class_table[cls].members;
+            auto cit = members.find(name);
+            if (cit != members.end()) {
+                out_info = &cit->second;
+                return true;
+            }
+
+            // move up parent
+            cls = class_table[cls].parent;
+        }
+    }
+    return false;
+}
+
+bool check_decl_any(const string& variable) {
+    var_info* info = nullptr;
+    if (lookup_var_info(variable, info)) return true;
+    sem_errors.push_back("Variable not declared in line " + std::to_string(countn+1) + " before usage.");
+    return false;
+}
+
+bool check_scope_any(const string& variable) {
+    var_info* info = nullptr;
+    if (!lookup_var_info(variable, info)) {
+        sem_errors.push_back("Variable '" + variable + "' not declared before usage at line " + to_string(countn + 1));
+        return false;
+    }
+
+    if (!curr_class_name.empty() && in_method) {
+        string cls = curr_class_name;
+        while (!cls.empty()) {
+            auto &members = class_table[cls].members;
+            if (members.find(variable) != members.end()) {
+                // Found the variable in this class or one of its parents — scope OK
+                return true;
+            }
+            cls = class_table[cls].parent;  // climb up inheritance
+        }
+    }
+
+    int var_scope = info->scope;
+    std::stack<int> temp_stack(scope_history);
+
+    while (!temp_stack.empty()) {
+        if (temp_stack.top() == var_scope)
+            return true;
+        temp_stack.pop();
+    }
+
+    sem_errors.push_back("Scope of variable '" + variable + "' not matching in line " +
+                         to_string(countn + 1) + ".");
+    return false;
+}
+
+bool get_id_type(const std::string& id, std::string& out_type) {
+    var_info* info = nullptr;
+    if (!lookup_var_info(id, info)) return false;
+    out_type = info->data_type;
+    return true;
+}
+
+int get_type_size(const string &dtype) {
+    if (dtype == "INT") return 4;
+    if (dtype == "FLOAT") return 4;
+    if (dtype == "CHAR") return 1;
+    if (dtype == "BOOL") return 1;
+    if (dtype == "STRING") return 20; // or whatever you prefer
+    return 0;
+}
+
 void PrintStack(stack<int> s) {
     if (s.empty())
         return;
@@ -1177,14 +1592,14 @@ void PrintStack(stack<int> s) {
     s.push(x);
 }
 
-void print_symbol_table() {
-    ofstream fout("symboltable.txt");
+void print_func_table() {
+    ofstream fout("FunctionTable.txt");
     if (!fout.is_open()) {
-        cerr << "Error: Unable to open symboltable.txt for writing\n";
+        cerr << "Error: Unable to open FunctionTable.txt for writing\n";
         return;
     }
 
-    fout << "======================= SYMBOL TABLE =======================\n\n";
+    fout << "======================= FUNCTION TABLE =======================\n\n";
 
     for (const auto &func_pair : func_table) {
         const string &func_name = func_pair.first;
@@ -1217,6 +1632,226 @@ void print_symbol_table() {
         }
 
         fout << "\n";
+    }
+
+    fout.close();
+}
+
+void print_class_table() {
+    ofstream fout("ClassTable.txt");
+    if (!fout.is_open()) {
+        cerr << "Error: Unable to open ClassTable.txt for writing\n";
+        return;
+    }
+
+    fout << "================================= CLASS TABLE =================================\n\n";
+
+    for (const auto &class_pair : class_table) {
+        const string &class_name = class_pair.first;
+        const class_info &cls = class_pair.second;
+
+        fout << "Class: " << class_name;
+        if (!cls.parent.empty())
+            fout << "    (Parent: " << cls.parent << ")";
+        fout << "\n\n";
+
+        // 🔹 Print Members
+        fout << "Members:\n";
+        fout << string(90, '-') << "\n";
+        fout << left << setw(25) << "Member"
+             << setw(12) << "Type"
+             << setw(12) << "Visibility"
+             << setw(8)  << "Scope"
+             << setw(8)  << "Array?"
+             << setw(8)  << "Size"
+             << setw(10) << "Line"
+             << "\n";
+        fout << string(90, '-') << "\n";
+
+        if (cls.members.empty()) {
+            fout << "(no members)\n";
+        } else {
+            for (const auto &mem_pair : cls.members) {
+                const string &mname = mem_pair.first;
+                const var_info &info = mem_pair.second;
+
+                fout << left << setw(25) << mname
+                     << setw(12) << info.data_type
+                     << setw(12) << info.visibility
+                     << setw(8)  << info.scope
+                     << setw(8)  << (info.isArray ? "Yes" : "No")
+                     << setw(8)  << info.size
+                     << setw(10) << info.line_number
+                     << "\n";
+            }
+        }
+        fout << "\n";
+
+        // 🔹 Print inherited members from parents
+        string parent = cls.parent;
+        bool inheritedPrinted = false;
+        while (!parent.empty()) {
+            const class_info &pinfo = class_table[parent];
+            if (!pinfo.members.empty()) {
+                if (!inheritedPrinted) {
+                    fout << "Inherited Members:\n";
+                    fout << string(90, '-') << "\n";
+                    fout << left << setw(25) << "Member"
+                         << setw(12) << "Type"
+                         << setw(12) << "Visibility"
+                         << setw(8)  << "Scope"
+                         << setw(8)  << "Array?"
+                         << setw(8)  << "Size"
+                         << setw(10) << "Line"
+                         << "\n";
+                    fout << string(90, '-') << "\n";
+                    inheritedPrinted = true;
+                }
+                for (const auto &mem_pair : pinfo.members) {
+                    fout << left << setw(25)
+                         << (mem_pair.first + " (from " + parent + ")")
+                         << setw(12) << mem_pair.second.data_type
+                         << setw(12) << mem_pair.second.visibility
+                         << setw(8)  << mem_pair.second.scope
+                         << setw(8)  << (mem_pair.second.isArray ? "Yes" : "No")
+                         << setw(8)  << mem_pair.second.size
+                         << setw(10) << mem_pair.second.line_number
+                         << "\n";
+                }
+            }
+            parent = pinfo.parent;
+        }
+        fout << "\n";
+
+        // 🔹 Print Methods summary
+        fout << "Methods (summary):\n";
+        fout << string(90, '-') << "\n";
+        fout << left << setw(30) << "Method"
+             << setw(15) << "Return Type"
+             << setw(12) << "Visibility"
+             << setw(8)  << "#Params"
+             << "Param Types"
+             << "\n";
+        fout << string(90, '-') << "\n";
+
+        if (cls.methods.empty()) {
+            fout << "(no methods)\n\n";
+        } else {
+            for (const auto &m_pair : cls.methods) {
+                const string &mname = m_pair.first;
+                const func_info &finfo = m_pair.second;
+
+                // Check if this method overrides a parent method
+                bool overrides = false;
+                string overriddenFrom = "";
+                string parentName = cls.parent;
+                while (!parentName.empty()) {
+                    if (class_table[parentName].methods.find(mname) !=
+                        class_table[parentName].methods.end()) {
+                        overrides = true;
+                        overriddenFrom = parentName;
+                        break;
+                    }
+                    parentName = class_table[parentName].parent;
+                }
+
+                // Join parameter types
+                string param_types = "";
+                for (size_t i = 0; i < finfo.param_types.size(); ++i) {
+                    param_types += finfo.param_types[i];
+                    if (i + 1 < finfo.param_types.size()) param_types += ", ";
+                }
+
+                string displayName = mname;
+                if (overrides)
+                    displayName += " (overrides " + overriddenFrom + ")";
+
+                fout << left << setw(30) << displayName
+                     << setw(15) << finfo.return_type
+                     << setw(12) << finfo.visibility
+                     << setw(8)  << finfo.num_params
+                     << param_types
+                     << "\n";
+            }
+            fout << "\n";
+
+            // 🔹 Print each method's local symbol table (if any)
+            for (const auto &m_pair : cls.methods) {
+                const string &mname = m_pair.first;
+                const func_info &finfo = m_pair.second;
+
+                fout << "Method: " << mname << "  (Return: " << finfo.return_type
+                     << ", Params: " << finfo.num_params
+                     << ", Visibility: " << finfo.visibility << ")\n";
+                fout << string(90, '-') << "\n";
+                fout << left << setw(15) << "Variable"
+                     << setw(10) << "Type"
+                     << setw(8)  << "Scope"
+                     << setw(8)  << "Array?"
+                     << setw(10) << "Size"
+                     << setw(10) << "Line"
+                     << "\n";
+                fout << string(90, '-') << "\n";
+
+                if (finfo.symbol_table.empty()) {
+                    fout << "(no local symbols)\n";
+                } else {
+                    for (const auto &v_pair : finfo.symbol_table) {
+                        const string &vname = v_pair.first;
+                        const var_info &vinfo = v_pair.second;
+
+                        fout << left << setw(15) << vname
+                             << setw(10) << vinfo.data_type
+                             << setw(8)  << vinfo.scope
+                             << setw(8)  << (vinfo.isArray ? "Yes" : "No")
+                             << setw(10) << vinfo.size
+                             << setw(10) << vinfo.line_number
+                             << "\n";
+                    }
+                }
+                fout << "\n";
+            }
+        }
+
+        // 🔹 Print inherited methods
+        string parent2 = cls.parent;
+        bool inheritedMethodsPrinted = false;
+        while (!parent2.empty()) {
+            const class_info &pinfo = class_table[parent2];
+            if (!pinfo.methods.empty()) {
+                if (!inheritedMethodsPrinted) {
+                    fout << "Inherited Methods:\n";
+                    fout << string(90, '-') << "\n";
+                    fout << left << setw(30) << "Method"
+                         << setw(15) << "Return Type"
+                         << setw(12) << "Visibility"
+                         << setw(8)  << "#Params"
+                         << "Param Types"
+                         << "\n";
+                    fout << string(90, '-') << "\n";
+                    inheritedMethodsPrinted = true;
+                }
+                for (const auto &pm : pinfo.methods) {
+                    // Join param types (optional)
+                    string param_types = "";
+                    for (size_t i = 0; i < pm.second.param_types.size(); ++i) {
+                        param_types += pm.second.param_types[i];
+                        if (i + 1 < pm.second.param_types.size()) param_types += ", ";
+                    }
+
+                    fout << left << setw(30)
+                         << (pm.first + " (from " + parent2 + ")")
+                         << setw(15) << pm.second.return_type
+                         << setw(12) << pm.second.visibility
+                         << setw(8)  << pm.second.num_params
+                         << param_types
+                         << "\n";
+                }
+            }
+            parent2 = pinfo.parent;
+        }
+
+        fout << string(90, '=') << "\n\n";
     }
 
     fout.close();

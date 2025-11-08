@@ -1,8 +1,66 @@
-Program: import_list func_list
+program: import_list func_list class_list
+       | import_list class_list func_list
+       | import_list func_list
+       | import_list class_list
+       ;
+
+class_list: class_list class_def
+          | class_def
+          ;
+
+class_def: CLASS ID inheritance_opt OF class_body CF
+         ;
+
+inheritance_opt: COLON ID
+               | /* empty */
+               ;
+
+class_body: access_specifier_block_list
+          | /* empty */
+          ;
+
+access_specifier_block_list: access_specifier_block access_specifier_block_list
+                           | access_specifier_block
+                           ;
+
+access_specifier_block: access_specifier COLON class_members
+                      ;
+
+access_specifier: PUBLIC
+                | PRIVATE
+                | PROTECTED
+                ;
+
+class_members: class_member class_members
+              | class_member
+              ;
+
+class_member: declaration
+             | func
+             | constructor_def
+             | destructor_def
+             ;
+
+constructor_def: ID OC param_list CC OF stmt_list CF
+               ;
+
+destructor_def: NEGATION ID OC CC OF stmt_list CF
+               ;
+
+#--------------------------
+# Object creation & access
+#--------------------------
+
+object_creation: data_type ID ASSIGN NEW ID OC arg_list CC SCOL
+               ;
+
+member_access: ID DOT ID
+              | ID DOT func_call
+              ;
 
 import_list: import_list import_stmt |
 
-import_stmt: IMPORT STR SCOL
+import_stmt: IMPORT STRING_LITERAL SCOL
 
 func_list: func_list func |
 
@@ -16,9 +74,9 @@ param_list: param COMMA param_list | param |
 
 param: data_type ID
 
-stmt_list: stmt stmt_list |
+stmt_list: stmt stmt_list
 
-stmt: declaration | assign SCOL | expr SCOL | return_stmt SCOL | if_stmt | while_loop_stmt | for_loop_stmt | BREAK SCOL | CONTINUE SCOL | switch_stmt
+stmt: declaration | assign SCOL | expr SCOL | return_stmt SCOL | if_stmt | while_loop_stmt | for_loop_stmt | BREAK SCOL | CONTINUE SCOL | switch_stmt | object_creation
 
 declaration: data_type ID SCOL | data_type ID ASSIGN expr SCOL | data_type ID OS INT_NUM CS SCOL | data_type ID OS INT_NUM CS ASSIGN
 
@@ -34,11 +92,11 @@ postfix_expr: func_call | ID OS expr CS
 
 unary_expr: unary_op primary_expr
 
-primary_expr: ID | const | OC expr CC
+primary_expr: ID | const | OC expr CC | member_access
 
 unary_op: ADD | SUBTRACT | NOT | NEGATION
 
-const: INT_NUM | FLOAT_NUM | CHARACTER | STR
+const: INT_NUM | FLOAT_NUM | CHARACTER | STRING_LITERAL
 
 assign: ID ASSIGN expr | ID OS expr CS ASSIGN expr
 

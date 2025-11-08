@@ -1,0 +1,20 @@
+// Object Creation and Member Access
+
+import "io.kik";
+
+class Student {
+    public:
+        int id;
+        string name;
+
+        void display() {
+            output(name);
+        }
+}
+
+int main() {
+    Student s = new Student();
+    s.name = "Akash";
+    s.display();
+    return 0;
+}

@@ -28,6 +28,13 @@ digit [0-9]
 "else"                      { strcpy(yylval.node.lexeme, yytext); return ELSE; }
 "while"                     { strcpy(yylval.node.lexeme, yytext); return WHILE; }
 "for"                       { strcpy(yylval.node.lexeme, yytext); return FOR; }
+"class"                     { strcpy(yylval.node.lexeme, yytext); return CLASS; }
+"public"                    { strcpy(yylval.node.lexeme, yytext); return PUBLIC; }
+"private"                   { strcpy(yylval.node.lexeme, yytext); return PRIVATE; }
+"protected"                 { strcpy(yylval.node.lexeme, yytext); return PROTECTED; }
+"new"                       { strcpy(yylval.node.lexeme, yytext); return NEW; }
+"."                         { strcpy(yylval.node.lexeme, yytext); return DOT; }
+
 {digit}+                    { strcpy(yylval.node.lexeme, yytext); return INT_NUM; }
 {digit}*\.{digit}+          { strcpy(yylval.node.lexeme, yytext); return FLOAT_NUM;}
 {alpha}({alpha}|{digit})*   { strcpy(yylval.node.lexeme, yytext); return ID; }
@@ -76,7 +83,7 @@ digit [0-9]
 \/\*(.*\n)*.*\*\/           { ; } 
 [ \t]*                      { ; }
 [\n]                        { countn++; }
-["].*["]                    { strcpy(yylval.node.lexeme, yytext); return STR; }
+["].*["]                    { strcpy(yylval.node.lexeme, yytext); return STRING_LITERAL; }
 ['].[']                     { strcpy(yylval.node.lexeme, yytext); return CHARACTER; }
 .                           { ; }
 

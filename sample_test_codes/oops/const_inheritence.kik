@@ -1,0 +1,31 @@
+// Constructor + Inheritance Combined
+import "io.kik";
+
+class Animal {
+    public:
+        string name;
+
+        Animal(string n) {
+            name = n;
+        }
+
+        void speak() {
+            output("Some sound");
+        }
+}
+
+class Dog : Animal {
+    public:
+        Dog(string n) {
+            name = n;
+        }
+
+        void speak() {
+            output("Woof!");
+        }
+}
+
+void main() {
+    Dog d = new Dog("Rocky");
+    d.speak();
+}

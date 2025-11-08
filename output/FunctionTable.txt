@@ -1,0 +1,17 @@
+======================= FUNCTION TABLE =======================
+
+Function: getMarks
+Return Type: FLOAT
+Parameters: 0
+------------------------------------------------------------
+Variable       Type      Scope   Array?  Size      Line      
+------------------------------------------------------------
+
+Function: setMarks
+Return Type: void
+Parameters: 1
+------------------------------------------------------------
+Variable       Type      Scope   Array?  Size      Line      
+------------------------------------------------------------
+m              FLOAT     1       No      4         12        
+

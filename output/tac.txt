@@ -1,31 +1,10 @@
-add: INT
-- arg INT a
-- arg INT b
-@t0 = 20 INT
-- INT result
-result = @t0 INT
-@t1 = a + b INT
-a = @t1 INT
-@t1 = 2 INT
-- INT c
-c = @t1 INT
-@t2 = a + b INT
-@t3 = @t2 + c INT
-@t2 = @t3 + result INT
-return @t2 INT
+// Simple Class Definition
+setMarks: void
+- arg FLOAT m
+marks = m FLOAT
 end:
 
-main: INT
-@t3 = 5 INT
-- INT result
-result = @t3 INT
-param result INT
-@t2 = 10 INT
-param @t2 INT
-@t4 = @call add INT 2
-- INT c
-c = @t4 INT
-@t4 = 0 INT
-return @t4 INT
+getMarks: FLOAT
+return marks FLOAT
 end:
 

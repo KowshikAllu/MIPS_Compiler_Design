@@ -1,0 +1,19 @@
+// Simple Class Definition
+
+class Student {
+    public:
+        int id;
+        char grade;
+
+    private:
+        float marks;
+
+    public:
+        void setMarks(float m) {
+            marks = m;
+        }
+
+        float getMarks() {
+            return marks;
+        }
+}

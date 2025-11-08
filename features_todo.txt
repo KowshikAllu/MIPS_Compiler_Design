@@ -4,6 +4,7 @@ make run INPUT=sample_code1
 
 make clean
 make clean-all
+
 ----------------------------------
 
 strings data_type
@@ -11,16 +12,21 @@ strings data_type
 lw, sw
 address??
 libs???
-OOPS?????????
+Recursion??
+Global variables
+optimization
 if-jmp remove and bne beq...
 init arr to 0
 for int i;
 int i, j;
 output("\n); not supported
 
-optimization
+arrays not working
+check `Warning: Unhandled TAC line: @t3 = a - b INT`
+
 scope_history, scope_counter in if stmts
 if to add libs -> change in valid_libs, import_stmt, func_call
+what is scope in class and func table?
 
 ----------------------------------
 
@@ -42,6 +48,10 @@ symbol table print
 libraries
 tac
 .stkasm
+OOPS
+
+OOPS:
+There are no explicit constructors in Car or Garage. Your code does new Car() and new Garage() — that implies a default constructor is allowed. If your language supports implicit default constructors, optionally print that fact. If not, you should detect and warn when new Class() is used but no constructor exists.
 
 Function 'max' used without importing \"math.kik\" at line
 duplicate funcs check
