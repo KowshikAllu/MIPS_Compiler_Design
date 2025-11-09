@@ -7,116 +7,87 @@ func:
 .global kik
 kik:
     sconst "Enter the number: "
-    invoke output 1
-    iload 0
-    invoke input 1
-    iload 0
-    iload 0
+    iload number
+    iload number
+    iload number
     invoke func 2
     sconst "hello"
     invoke strlen 1
-    iconst 9
-    NEW_ARRAY
-    istore 1
     iconst 107
     iconst 0
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 105
     iconst 1
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 107
     iconst 2
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 32
     iconst 3
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 99
     iconst 4
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 111
     iconst 5
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 100
     iconst 6
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 101
     iconst 7
-    iload 1
-    SET_ELEM
+    iastore s
     iconst 0
     iconst 8
-    iload 1
-    SET_ELEM
-    iconst 10
-    NEW_ARRAY
-    istore 2
+    iastore s
     iconst 107
     iconst 0
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 105
     iconst 1
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 107
     iconst 2
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 32
     iconst 3
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 99
     iconst 4
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 111
     iconst 5
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 100
     iconst 6
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 101
     iconst 7
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 50
     iconst 8
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 0
     iconst 9
-    iload 2
-    SET_ELEM
+    iastore s2
     iconst 2
-    istore 3
+    istore i
 #L0:
-    iload 3
-    iload 0
+    iload i
+    iload number
     ilt
     jnz #L1
     jmp #L2
 #L3:
-    iload 3
+    iload i
     iconst 1
     iadd
-    istore 3
+    istore i
     jmp #L0
 #L1:
-    iload 0
-    iload 3
+    iload number
+    iload i
     imod
-    iconst 0
-    ieq
     inot
     jnz #L5
     jmp #L6
@@ -125,13 +96,11 @@ kik:
     jmp #L4
 #L6:
     sconst "It is not a prime number.\n"
-    invoke output 1
     iconst 0
     ret
 #L4:
     jmp #L3
 #L2:
     sconst "It is a prime number.\n"
-    invoke output 1
     iconst 0
     ret

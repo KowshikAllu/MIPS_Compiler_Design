@@ -5,6 +5,7 @@ make run INPUT=sample_code1
 make clean
 make clean-all
 
+https://hackmd.io/@akash-madugundi/BJGYcae6le
 ----------------------------------
 
 strings data_type

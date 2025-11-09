@@ -4,8 +4,6 @@ top_level_list: top_level_list top_level_stmt | ;
 
 top_level_stmt: import_stmt | func | class_def ;
 
-class_list: class_list class_def | class_def ;
-
 class_def: CLASS ID inheritance_opt OF class_body CF ;
 
 inheritance_opt: COLON ID | ;

@@ -1,13 +1,7 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <regex>
-#include <unordered_map>
-#include <algorithm>
-#include <cctype>
-
+#include <bits/stdc++.h>
 using namespace std;
 
+// Function to trim whitespace from both ends of a string
 string trim(const string &s) {
     string out = s;
     size_t start = out.find_first_not_of(" \t\r\n");
@@ -16,7 +10,7 @@ string trim(const string &s) {
     return out.substr(start, end - start + 1);
 }
 
-// FIXED: Helper function to check if a string is a number
+// Helper function to check if a string is a number
 bool is_number(const string& s) {
     return !s.empty() && find_if(s.begin(), s.end(), [](unsigned char c) { return !isdigit(c); }) == s.end();
 }
@@ -54,12 +48,12 @@ int main() {
             
             varIndex.clear();
             nextVarIndex = 0;
+            tempValues.clear(); // Clear temps for new function
             
             continue;
         }
 
         // --- Argument Declaration ---
-        // - arg INT number
         if (regex_match(line, matches, regex("- arg (INT|STR) ([a-zA-Z_][a-zA-Z0-9_]*)"))) {
             string var_name = matches[2];
             if (varIndex.find(var_name) == varIndex.end()) {
@@ -69,7 +63,6 @@ int main() {
         }
 
         // --- Variable Declaration ---
-        // - INT result
         if (regex_match(line, matches, regex("- (INT|STR) ([a-zA-Z_][a-zA-Z0-9_]*)"))) {
             string var_name = matches[2];
             if (varIndex.find(var_name) == varIndex.end()) {
@@ -78,8 +71,8 @@ int main() {
             continue; 
         }
 
-        // --- Array Declaration (Allocation and Initialization) ---
-        // - INT numbers [ 5 ]
+        // --- MODIFIED: Array Declaration (Allocation) ---
+        // Handles: - INT numbers [ 5 ]
         if (regex_match(line, matches, regex("- INT ([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([0-9]+) \\]"))) {
             string arr_name = matches[1];
             string arr_size = matches[2];
@@ -89,8 +82,8 @@ int main() {
             }
             
             stkFile << "    iconst " << arr_size << "\n";
-            stkFile << "    newarray INT\n"; 
-            stkFile << "    astore " << varIndex[arr_name] << "\n"; // Use index
+            stkFile << "    NEW_ARRAY\n"; // Changed from newarray INT
+            stkFile << "    istore " << varIndex[arr_name] << "\n"; // Changed from astore
             continue;
         }
 
@@ -118,21 +111,48 @@ int main() {
             continue;
         }
 
-        // --- Array Initialization (iastore) ---
-        if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([0-9]+) \\] = ([0-9]+) INT"))) {
+        // --- MODIFIED: Array Assignment (SET_ELEM) ---
+        // This new rule handles both:
+        // 1. numbers [ 0 ] = 4 INT
+        // 2. my_arr [ @t0 ] = @t1 INT
+        if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) \\[ (.*) \\] = (.*) INT"))) {
             string arr_name = matches[1];
-            string index = matches[2];
-            string val = matches[3];
+            string index_op = trim(matches[2]); // Can be "0" or "@t0"
+            string value_op = trim(matches[3]); // Can be "4" or "@t1"
+
+            // --- 1. Push Value ---
+            if (value_op.rfind("@t", 0) == 0) {
+                if (tempValues.count(value_op)) { // It's a const temp like @t1=100
+                    stkFile << "    iconst " << tempValues[value_op] << "\n";
+                }
+                // else: It's a computed temp, value is already on stack. DO NOTHING.
+            } else if (is_number(value_op)) { // It's a raw number like 4
+                stkFile << "    iconst " << value_op << "\n";
+            } else { // Should not happen in this TAC, but good to have
+                stkFile << "    iload " << varIndex[value_op] << "\n";
+            }
             
-            stkFile << "    aload " << varIndex[arr_name] << "\n";
-            stkFile << "    iconst " << index << "\n"; 
-            stkFile << "    iconst " << val << "\n";    
-            stkFile << "    iastore\n"; 
+            // --- 2. Push Index ---
+            if (index_op.rfind("@t", 0) == 0) {
+                if (tempValues.count(index_op)) { // It's a const temp like @t0=0
+                    stkFile << "    iconst " << tempValues[index_op] << "\n";
+                }
+                // else: It's a computed temp, value is already on stack. DO NOTHING.
+            } else if (is_number(index_op)) { // It's a raw number like 0
+                stkFile << "    iconst " << index_op << "\n";
+            } else {
+                stkFile << "    iload " << varIndex[index_op] << "\n";
+            }
+            
+            // --- 3. Push Array Pointer ---
+            stkFile << "    iload " << varIndex[arr_name] << "\n";
+            
+            // --- 4. Emit Opcode ---
+            stkFile << "    SET_ELEM\n";
             continue;
         }
         
         // --- Array Access (iaload) ---
-        // FIXED: Regex to allow multi-character variable names
         if (regex_match(line, matches, regex("(@t[0-9]+) = ([a-zA-Z_][a-zA-Z0-9_]*) \\[ ([a-zA-Z_][a-zA-Z0-9_]*) \\] INT"))) {
             string arr_name = matches[2];
             string index_var = matches[3];
@@ -151,29 +171,24 @@ int main() {
 
             // --- Handle Operand 1 (a) ---
             if (a.rfind("@t", 0) == 0) {
-                // It's a temporary (e.g., @t2), value is already on stack.
-                // But if it's a CONSTANT temporary, we need to push it.
                 if (tempValues.count(a)) {
                     stkFile << "    iconst " << tempValues[a] << "\n";
                 }
-            } else if (is_number(a)) { // FIXED: Check if it's a raw number
+            } else if (is_number(a)) {
                 stkFile << "    iconst " << a << "\n";
             } else {
-                // It's a variable
-                stkFile << "    iload " << varIndex[a] << "\n"; // Use index
+                stkFile << "    iload " << varIndex[a] << "\n";
             }
 
             // --- Handle Operand 2 (b) ---
             if (b.rfind("@t", 0) == 0) {
-                // It's a temporary (e.g., @t3), value is already on stack.
                 if (tempValues.count(b)) {
                     stkFile << "    iconst " << tempValues[b] << "\n";
                 }
-            } else if (is_number(b)) { // FIXED: Check if it's a raw number
+            } else if (is_number(b)) {
                 stkFile << "    iconst " << b << "\n";
             } else {
-                // It's a variable
-                stkFile << "    iload " << varIndex[b] << "\n"; // Use index
+                stkFile << "    iload " << varIndex[b] << "\n";
             }
 
             // --- Operation ---
@@ -202,7 +217,6 @@ int main() {
         }
 
         // --- String Assignment (s = "kik code" STR) ---
-        // FIXED: Regex to allow multi-character var names and full strings
         if (regex_match(line, matches, regex("([a-zA-Z_][a-zA-Z0-9_]*) = \"(.*)\" STR"))) {
             string lhs = matches[1];
             string val = matches[2];
@@ -274,6 +288,14 @@ int main() {
         if (line.find("return") != string::npos) {
             size_t pos = line.find("return");
             string val_ref = trim(line.substr(pos + 6));
+
+            // Handle void return
+            if (val_ref.empty() || val_ref.find("void") != string::npos) {
+                 stkFile << "    ret\n";
+                 continue;
+            }
+
+            // Handle INT return
             val_ref = trim(val_ref.substr(0, val_ref.find("INT")));
 
             if (tempValues.count(val_ref)) {
@@ -300,6 +322,3 @@ int main() {
     cout << "✅ STKASM code generator updated successfully.\n";
     return 0;
 }
-
-
-// Arrays proper

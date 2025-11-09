@@ -1,37 +1,24 @@
 ======================= FUNCTION TABLE =======================
 
-Function: showDetails
-Return Type: void
-Parameters: 0
-------------------------------------------------------------
-Variable       Type      Scope   Array?  Size      Line      
-------------------------------------------------------------
-
-Function: main
+Function: kik
 Return Type: INT
 Parameters: 0
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
-m              Manager   1       No      0         44        
+i              INT       1       No      4         21        
+s2             INT       1       Yes     10        19        
+s              INT       1       Yes     9         18        
+number         INT       1       No      4         11        
 
-Function: Manager
+Function: func
 Return Type: void
-Parameters: 4
+Parameters: 2
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
-t              INT       1       No      4         29        
-s              FLOAT     1       No      4         29        
-i              INT       1       No      4         29        
-n              STRING    1       No      20        29        
-
-Function: display
-Return Type: void
-Parameters: 0
-------------------------------------------------------------
-Variable       Type      Scope   Array?  Size      Line      
-------------------------------------------------------------
+num2           INT       1       No      4         5         
+number         INT       1       No      4         5         
 
 Function: output
 Return Type: VOID
@@ -40,15 +27,12 @@ Parameters: 1
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
 
-Function: Employee
-Return Type: void
-Parameters: 3
+Function: strlen
+Return Type: INT
+Parameters: 1
 ------------------------------------------------------------
 Variable       Type      Scope   Array?  Size      Line      
 ------------------------------------------------------------
-s              FLOAT     1       No      4         10        
-i              INT       1       No      4         10        
-n              STRING    1       No      20        10        
 
 Function: input
 Return Type: VOID

@@ -1,51 +1,79 @@
-- arg STRING n
-- arg INT i
-- arg FLOAT s
-name = n STRING
-id = i INT
-salary = s FLOAT
-display: void
-@t0 = "Employee:" STR
-param @t0 STR
-@t1 = @call output VOID 1
-param name STRING
-@t2 = @call output VOID 1
-param id INT
-@t3 = @call output VOID 1
-param salary FLOAT
-@t4 = @call output VOID 1
+// Check whether it's a prime number 
+// null
+//func2(number);
+func: void
+- arg INT number
+- arg INT num2
 end:
 
-- arg STRING n
-- arg INT i
-- arg FLOAT s
-- arg INT t
-name = n STRING
-id = i INT
-salary = s FLOAT
-teamSize = t INT
-showDetails: void
-@t5 = @call display void 0
-@t6 = "Team Size:" STR
-param @t6 STR
-@t7 = @call output VOID 1
-param teamSize INT
-@t8 = @call output VOID 1
-end:
+kik: INT
+- INT number
+param "Enter the number: " STR
+@t0 = @call output VOID 1
+param number INT
+@t1 = @call input VOID 1
+param number INT
+param number INT
+@t2 = @call func void 2
+param "hello" STR
+@t3 = @call strlen INT 1
+- INT s [ 9 ]
+s [ 0 ] = 107 INT
+s [ 1 ] = 105 INT
+s [ 2 ] = 107 INT
+s [ 3 ] = 32 INT
+s [ 4 ] = 99 INT
+s [ 5 ] = 111 INT
+s [ 6 ] = 100 INT
+s [ 7 ] = 101 INT
+s [ 8 ] = 0 INT
+- INT s2 [ 10 ]
+s2 [ 0 ] = 107 INT
+s2 [ 1 ] = 105 INT
+s2 [ 2 ] = 107 INT
+s2 [ 3 ] = 32 INT
+s2 [ 4 ] = 99 INT
+s2 [ 5 ] = 111 INT
+s2 [ 6 ] = 100 INT
+s2 [ 7 ] = 101 INT
+s2 [ 8 ] = 50 INT
+s2 [ 9 ] = 0 INT
+@t4 = 2 INT
+- INT i
+i = @t4 INT
 
-main: INT
-@t9 = "Akash" STR
-param @t9 STR
-@t10 = 101 INT
-param @t10 INT
-@t11 = 55000.5 FLOAT
-param @t11 FLOAT
-@t12 = 5 INT
-param @t12 INT
-- Manager m
-m = new Manager
-@t13 = @call showDetails void 0
-@t14 = 0 INT
-return @t14 INT
+#L0:
+@t5 = i < number INT
+
+if : GOTO #L1 else GOTO #L2
+
+#L3:
+@t6 = 1 INT
+@t7 = i + @t6 INT
+i = @t7 INT
+GOTO #L0
+
+#L1:
+@t7 = number % i INT
+@t8 = 0 INT
+@t10 = @t7 == @t8 INT
+@t9 = ~ @t10 INT
+if : GOTO #L5 else GOTO #L6
+#L5:
+GOTO #L3
+GOTO #L4
+#L6:
+param "It is not a prime number.\n" STR
+@t10 = @call output VOID 1
+@t7 = 0 INT
+return @t7 INT
+#L4:
+GOTO #L3
+
+#L2:
+param "It is a prime number.\n" STR
+@t11 = @call output VOID 1
+@t12 = 0 INT
+return @t12 INT
 end:
 

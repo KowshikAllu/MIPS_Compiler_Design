@@ -1,12 +1,12 @@
-// Sample Function Code 
-import "io.kik";
-
-void func(int number, int num2) {
-    output("This is a function\n");
+int add(int a, int b) {
+    int result = 20;
+    a = a + b;
+    int c = 2;
+    return a+b + c + result;
 }
 
-int kik(){
-    int number;
-    func(number, number);
+int main() {
+    int result = 5;
+    int c = add(result, 10);
     return 0;
 }

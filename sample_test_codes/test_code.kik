@@ -1,15 +1,7 @@
 import "io.kik";
 
-int add(string str, int a, int b) {
-    int result = 20;
-    a = a + b;
-    int c = 2;
-    return a+b + c + result;
-}
-
 int main() {
-    int result = 5;
-    string str = "akash";
-    int c = add(str, result, 10);
+    string str = "abcde";
+    output(str);
     return 0;
 }

@@ -1,5 +1,5 @@
 # Default input file
-INPUT ?= bundle
+ip ?= bundle
 
 # Directory where .kik files live
 SRC_DIR = sample_test_codes
@@ -8,21 +8,25 @@ SRC_DIR = sample_test_codes
 OUT_DIR = output
 $(shell mkdir -p $(OUT_DIR))
 
-all: parser vm stkasm
+all: parser vm stkasm stkasm_orig
 
 # run:
-# 	./parser < $(SRC_DIR)/$(INPUT).kik > tac.txt;\
+# 	./parser < $(SRC_DIR)/$(ip).kik > tac.txt;\
 # 	./tac-vm > output.vm;\
 # 	./tac-stkasm > output.stkasm;\
-# 	mkdir -p $(OUT_DIR)/$(INPUT);\
-# 	mv tac.txt output.vm output.stkasm FunctionTable.txt ClassTable.txt $(OUT_DIR)/$(INPUT)/
+# 	mkdir -p $(OUT_DIR)/$(ip);\
+# 	mv tac.txt output.vm output.stkasm FunctionTable.txt ClassTable.txt $(OUT_DIR)/$(ip)/
 
 run:
-	./parser < $(SRC_DIR)/$(INPUT).kik > tac.txt;\
+	./parser < $(SRC_DIR)/$(ip).kik > tac.txt;\
 	./tac-vm > output.vm;\
-	./tac-stkasm > output.stkasm;\
+	./tac-stkasm_orig;\
+	./tac-stkasm;\
 	mkdir -p $(OUT_DIR);\
-	mv tac.txt output.vm output.stkasm FunctionTable.txt ClassTable.txt $(OUT_DIR)/
+	mv tac.txt output.vm output_orig.stkasm output.stkasm FunctionTable.txt ClassTable.txt $(OUT_DIR)/
+
+stkasm_orig: tac-other/tac-stkasm_orig.cpp
+	g++ tac-other/tac-stkasm_orig.cpp -o tac-stkasm_orig
 
 stkasm: tac-other/tac-stkasm.cpp
 	g++ tac-other/tac-stkasm.cpp -o tac-stkasm
